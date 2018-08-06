@@ -20,3 +20,4 @@ poppler-qt5-uninstalled.pc
 poppler-splash-uninstalled.pc
 poppler-uninstalled.pc
 /build/
+.vs/
