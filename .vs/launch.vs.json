@@ -7,7 +7,12 @@
       "project": "CMakeLists.txt",
       "projectTarget": "pdftohtml.exe (Install) (bin\\pdftohtml.exe)",
       "name": "PDFTOHTML test.pdf",
-      "args": [ "-c", "${workspaceRoot}\\..\\..\\..\\test.pdf", "${workspaceRoot}\\build\\test.html" ]
+      "args": [
+        "-c",
+        "-fontfullname",
+        "${workspaceRoot}\\..\\..\\..\\test.pdf",
+        "${workspaceRoot}\\build\\test.html"
+      ]
     }
   ]
 }
