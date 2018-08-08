@@ -125,6 +125,7 @@ set(pdftohtml_SOURCES ${common_srcs}
   HtmlFonts.cc
   HtmlLinks.cc
   HtmlOutputDev.cc
+  devanagari.cc
 )
 add_executable(pdftohtml ${pdftohtml_SOURCES})
 target_link_libraries(pdftohtml ${common_libs})

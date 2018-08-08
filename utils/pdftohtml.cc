@@ -90,6 +90,7 @@ double wordBreakThreshold=10;  // 10%, below converted into a coefficient - 0.1
 GBool showHidden = gFalse;
 GBool noMerge = gFalse;
 GBool fontFullName = gFalse;
+bool devanagariConvertTex = false;
 static char ownerPassword[33] = "";
 static char userPassword[33] = "";
 static GBool printVersion = gFalse;
@@ -154,6 +155,8 @@ static const ArgDesc argDesc[] = {
    "word break threshold (default 10 percent)"},
   {"-fontfullname", argFlag, &fontFullName, 0,
    "outputs font full name"},   
+  {"-devanagari-convert-tex", argFlag, &devanagariConvertTex, 0,
+   "decode Devanagari script as produced by some versions of TeX"},
   {}
 };
 

@@ -95,6 +95,9 @@ public:
   HtmlLink* getLink() { return link; }
   const HtmlFont &getFont() const { return *fonts->Get(fontpos); }
   void endString(); // postprocessing
+  int getLen() const { return len; }
+  Unicode & operator[](int i) { return text[i]; }
+  void replaceChar(int index, std::initializer_list<Unicode> chars);
 
 private:
 // aender die text variable

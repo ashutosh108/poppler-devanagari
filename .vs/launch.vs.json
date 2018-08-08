@@ -5,11 +5,12 @@
     {
       "type": "default",
       "project": "CMakeLists.txt",
-      "projectTarget": "pdftohtml.exe (Install) (bin\\pdftohtml.exe)",
+      "projectTarget": "pdftohtml.exe (utils\\Debug\\pdftohtml.exe)",
       "name": "PDFTOHTML test.pdf",
       "args": [
         "-c",
         "-fontfullname",
+        "-devanagari-convert-tex",
         "${workspaceRoot}\\..\\..\\..\\test.pdf",
         "${workspaceRoot}\\build\\test.html"
       ]

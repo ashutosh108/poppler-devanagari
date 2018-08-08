@@ -75,6 +75,7 @@
 #include "HtmlUtils.h"
 #include "Outline.h"
 #include "PDFDoc.h"
+#include "devanagari.h"
 
 #ifdef ENABLE_LIBPNG
 #include <png.h>
@@ -113,6 +114,7 @@ extern GBool xml;
 extern GBool noRoundedCoordinates;
 extern GBool showHidden;
 extern GBool noMerge;
+extern bool devanagariConvertTex;
 
 extern double wordBreakThreshold;
 
@@ -273,6 +275,16 @@ void HtmlString::endString()
       text[len - i - 1] = ch;
     }
   }
+  if (::devanagariConvertTex) {
+      devanagari::convertFromTex(*this);
+  }
+}
+
+void HtmlString::replaceChar(int index, std::initializer_list<Unicode> chars) {
+    size_t size = chars.size();
+    if (size >= 1) {
+        (*this)[index] = *(chars.begin());
+    }
 }
 
 //------------------------------------------------------------------------
