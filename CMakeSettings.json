@@ -9,20 +9,26 @@
   "configurations": [
     {
       "name": "x86-Debug",
-      "generator": "Ninja",
+//      "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x86" ],
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
       "cmakeCommandArgs": "",
-      "buildCommandArgs": "-v",
+      "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "variables": [
-        //"CMAKE_TOOLCHAIN_FILE": "J:/YandexDisk/Reference/B/Books/Madhva/source/vendor/build/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        //"ENABLE_CPP": "OFF",
         {
           "name": "CMAKE_CXX_COMPILER",
           "value": "c:/msys64/mingw32/bin/g++.exe"
+        },
+        {
+          "name": "CMAKE_TOOLCHAIN_FILE",
+          "value": "J:/YandexDisk/Reference/B/Books/Madhva/source/vendor/build/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        },
+        {
+          "name": "ENABLE_CPP",
+          "value": "OFF"
         }
       ]
     },
