@@ -14,6 +14,9 @@ namespace devanagari {
         _II = 0x940,
         ma = 0x92E,
         da = 0x926,
+        _a = 0x93E,
+        na = 0x928,
+        ta = 0x924,
     };
 
 }

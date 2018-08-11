@@ -56,6 +56,10 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     using namespace devanagari;
     devanagariTest("m", { Char::ma });
     devanagariTest("d", { Char::da });
+    devanagariTest("A", { Char::_a });
+    devanagariTest("n", { Char::na });
+    devanagariTest("\006", { Char::na, Char::HALANT });
+    devanagariTest("t", { Char::ta });
 }
 
 BOOST_AUTO_TEST_CASE(Devanagari_unknownLettersAreShownAsHexCodes) {

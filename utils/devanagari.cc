@@ -20,6 +20,19 @@ namespace devanagari {
             else if (str[i] == 'd') {
                 str.replaceChar(i, { Char::da });
             }
+            else if (str[i] == 'A') {
+                str.replaceChar(i, { Char::_a });
+            }
+            else if (str[i] == 'n') {
+                str.replaceChar(i, { Char::na });
+            }
+            else if (str[i] == '\006') {
+                str.replaceChar(i, { Char::na, Char::HALANT });
+                i += 1;
+            }
+            else if (str[i] == 't') {
+                str.replaceChar(i, { Char::ta });
+            }
             else {
                 static const char * hex = "0123456789ABCDEF";
                 unsigned char hex1 = hex[(str[i] / 16) % 16];
