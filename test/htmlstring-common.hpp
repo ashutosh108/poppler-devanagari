@@ -69,7 +69,11 @@ void ensureStringIs(HtmlString & s, const char * expected) {
     BOOST_TEST(s.getLen() == len);
     int minLen = std::min(s.getLen(), len);
     for (int i = 0; i < minLen; ++i) {
-        BOOST_TEST(s[i] == expected[i]);
+        std::stringstream stream;
+        stream << "s[" << i << "]: " <<
+            "expected " << expected[i] << "; " <<
+            "got " << s[i];
+        BOOST_TEST(s[i] == expected[i], stream.str());
     }
 }
 

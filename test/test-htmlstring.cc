@@ -26,3 +26,11 @@ BOOST_AUTO_TEST_CASE(HTMLString_replaceOneCharWithMultiple) {
 
     ensureStringIs(s, "adefc");
 }
+
+BOOST_AUTO_TEST_CASE(HTMLString_replaceOneAndOnlyCharWithMultiple) {
+    NEW_HTML_STRING(s, "a");
+
+    s.replaceChar(0, { 'd', 'e', 'f' });
+
+    ensureStringIs(s, "def");
+}

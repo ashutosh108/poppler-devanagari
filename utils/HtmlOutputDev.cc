@@ -297,6 +297,7 @@ void HtmlString::endString()
 }
 
 void HtmlString::replaceChar(int index, std::initializer_list<Unicode> chars) {
+    assert(index < len);
     HtmlString & s = *this; // alias to avoid visual clutter of (*this)[i]
     size_t size = chars.size();
     if (size == 0) {
@@ -306,12 +307,14 @@ void HtmlString::replaceChar(int index, std::initializer_list<Unicode> chars) {
         // d_first is NOT within the range [first, last),
         // i.e. if we copy to the left, which is the case here
         std::copy(&s[index + 1], &s[len], &s[index]);
-        --this->len;
     } else {
         reserve(len + size - 1);
-        // s:   A       B       C       D       E       F       G       H
-        //      0       ...     index   index+1 ...     index+  ...     len-1   len
-        //                                              size
+        // ABCDEF        index=3
+        //    ^          len  =6
+        //    QQ         size =2
+        // ABCQQDEF
+        // 012345678
+        //
         // std::copy_backward is safe for overlapping rnages iff
         // d_last is NOT within (first, last]
         // i.e. if we copy to the right, which is the case here.
@@ -319,12 +322,13 @@ void HtmlString::replaceChar(int index, std::initializer_list<Unicode> chars) {
         // no need to copy existing chars if replacement is only 1 char long
         // also std::copy_backwards would have been undefined in that case
         if (size > 1) {
-            std::copy_backward(&s[index + 1], &s[len], &s[index + size + 1]);
+            // note: 3rd argument is destination end (NOT start)
+            std::copy_backward(&s[index + 1], &s[len], &s[len + size - 1]);
         }
         // copy new chars
         std::copy(chars.begin(), chars.end(), &s[index]);
-        this->len += size - 1;
     }
+    this->len += size - 1;
 }
 
 //------------------------------------------------------------------------
