@@ -1,4 +1,3 @@
-#include <cassert>
 #define BOOST_TEST_MODULE HtmlString
 #include <boost/test/unit_test.hpp>
 
