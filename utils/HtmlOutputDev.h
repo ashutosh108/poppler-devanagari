@@ -98,6 +98,7 @@ public:
   int getLen() const { return len; }
   Unicode & operator[](int i) { return text[i]; }
   void replaceChar(int index, std::initializer_list<Unicode> chars);
+  void reserve(int capacity);
 
 private:
 // aender die text variable

@@ -250,9 +250,7 @@ void HtmlString::addChar(GfxState *state, double x, double y,
   } 
 
   if (len == size) {
-    size += 16;
-    text = (Unicode *)grealloc(text, size * sizeof(Unicode));
-    xRight = (double *)grealloc(xRight, size * sizeof(double));
+    reserve(len + 1);
   }
   text[len] = u;
   if (len == 0) {
@@ -261,6 +259,24 @@ void HtmlString::addChar(GfxState *state, double x, double y,
   xMax = xRight[len] = x + dx;
 //printf("added char: %f %f xright = %f\n", x, dx, x+dx);
   ++len;
+}
+
+// round number to the next multiple of given number
+int roundUp(int num, int multipleOf) {
+    if (multipleOf == 0)
+        return num;
+
+    int remainder = num % multipleOf;
+    if (remainder == 0)
+        return num;
+
+    return num + multipleOf - remainder;
+}
+
+void HtmlString::reserve(int capacity) {
+  size = roundUp(capacity, 16);
+  text = (Unicode *)grealloc(text, size * sizeof(Unicode));
+  xRight = (double *)grealloc(xRight, size * sizeof(double));
 }
 
 void HtmlString::endString()
@@ -281,9 +297,33 @@ void HtmlString::endString()
 }
 
 void HtmlString::replaceChar(int index, std::initializer_list<Unicode> chars) {
+    HtmlString & s = *this; // alias to avoid visual clutter of (*this)[i]
     size_t size = chars.size();
-    if (size >= 1) {
-        (*this)[index] = *(chars.begin());
+    if (size == 0) {
+        // s:   A       B       C       D       E       F
+        //      0       ...     index   index+1 ...     len-1   len
+        // std::copy is safe for overlapping ranges iff
+        // d_first is NOT within the range [first, last),
+        // i.e. if we copy to the left, which is the case here
+        std::copy(&s[index + 1], &s[len], &s[index]);
+        --this->len;
+    } else {
+        reserve(len + size - 1);
+        // s:   A       B       C       D       E       F       G       H
+        //      0       ...     index   index+1 ...     index+  ...     len-1   len
+        //                                              size
+        // std::copy_backward is safe for overlapping rnages iff
+        // d_last is NOT within (first, last]
+        // i.e. if we copy to the right, which is the case here.
+
+        // no need to copy existing chars if replacement is only 1 char long
+        // also std::copy_backwards would have been undefined in that case
+        if (size > 1) {
+            std::copy_backward(&s[index + 1], &s[len], &s[index + size + 1]);
+        }
+        // copy new chars
+        std::copy(chars.begin(), chars.end(), &s[index]);
+        this->len += size - 1;
     }
 }
 

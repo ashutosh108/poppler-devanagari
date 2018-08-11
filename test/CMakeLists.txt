@@ -52,4 +52,14 @@ set (pdf_fullrewrite_SRCS
 add_executable(pdf-fullrewrite ${pdf_fullrewrite_SRCS})
 target_link_libraries(pdf-fullrewrite poppler)
 
+find_package(Boost 1.67 REQUIRED COMPONENTS unit_test_framework)
 
+add_executable(test-htmlstring
+	test-htmlstring.cc
+	../utils/HtmlOutputDev.cc
+	../utils/HtmlLinks.cc
+	../utils/HtmlFonts.cc
+	../utils/devanagari.cc)
+target_link_libraries(test-htmlstring poppler Boost::unit_test_framework)
+target_include_directories(test-htmlstring PRIVATE "${CMAKE_SOURCE_DIR}/utils")
+add_test(NAME test_htmlstring COMMAND test-htmlstring)

@@ -766,3 +766,4 @@ add_custom_target(dist
         COMMAND tar -C ${CMAKE_BINARY_DIR} -rf ${CMAKE_BINARY_DIR}/${ARCHIVE_NAME}.tar glib/reference/html --transform='s,,${ARCHIVE_NAME}/,' --owner root:0 --group root:0
         COMMAND xz -9 ${CMAKE_BINARY_DIR}/${ARCHIVE_NAME}.tar
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+enable_testing()
