@@ -12,6 +12,8 @@ namespace devanagari {
         HALANT = 0x94D,
         R = 0x930,
         _II = 0x940,
+        ma = 0x92E,
+        da = 0x926,
     };
 
 }
