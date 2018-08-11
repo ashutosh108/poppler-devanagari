@@ -53,7 +53,8 @@ public:
     HtmlString name((GfxState *)&gfx, 1.0, nullptr); \
     addString(name, init_str);
 
-void addChar(HtmlString &s, char c) {
+// unsigned to avoid converting e.g. 0x80 to 0xffffff80 on platforms with signed char
+void addChar(HtmlString &s, unsigned char c) {
     s.addChar(nullptr, 10.0, 10.0, 1, 0, c);
 }
 

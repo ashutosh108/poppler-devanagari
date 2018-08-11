@@ -1,5 +1,7 @@
 #define BOOST_TEST_MODULE HtmlString
 #include <boost/test/unit_test.hpp>
+#include <iomanip>
+#include <sstream>
 
 #include "devanagari.h"
 
@@ -11,8 +13,12 @@ void ensureStringIs(HtmlString & s, std::initializer_list<Unicode> expected) {
     int minLen = std::min(s.getLen(), len);
     int i = 0;
     for (auto c : expected) {
-        BOOST_TEST(s[i] == c);
-        ++i;
+        std::stringstream stream;
+        stream << "s[" << i << "] = 0x" <<
+            std::hex << std::setfill('0') << std::setw(sizeof(c) * 2) <<
+            s[i] << ", expected 0x" << c;
+        BOOST_TEST(s[i] == c, stream.str());
+        if (++i > minLen) break;
     }
 }
 
@@ -22,4 +28,16 @@ BOOST_AUTO_TEST_CASE(Devanagari_OM) {
     devanagari::convertFromTex(s);
 
     ensureStringIs(s, { devanagari::Char::OM });
+}
+
+BOOST_AUTO_TEST_CASE(Devanagari_Srii) {
+    NEW_HTML_STRING(s, "\200" "F");
+
+    devanagari::convertFromTex(s);
+
+    ensureStringIs(s, {
+        devanagari::Char::Z,
+        devanagari::Char::HALANT,
+        devanagari::Char::R,
+        devanagari::Char::_II});
 }

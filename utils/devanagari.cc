@@ -9,6 +9,9 @@ namespace devanagari {
             } else if (str[i] == 0x80) {
                 str.replaceChar(i, { Char::Z, Char::HALANT, Char::R });
             }
+            else if (str[i] == 'F') {
+                str.replaceChar(i, { Char::_II });
+            }
         }
     }
 
