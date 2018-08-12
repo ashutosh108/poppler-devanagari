@@ -7,16 +7,24 @@ namespace devanagari {
 
     void convertFromTex(HtmlString &str) {
         using Chars = std::vector<Unicode>;
-        static std::map<char, Chars> map = {
+        static std::map<char, Chars> map =
+        {
             { ':', { Char::om } },
-            { '\200', { Char::za, Char::halant, Char::ra }},
+            { '\200', { Char::sha, Char::virama, Char::ra }},
             { 'F', { Char::_ii } },
             { 'm', { Char::ma } },
             { 'd', { Char::da } },
-            { 'A', { Char::_a } },
+            { 'd', { Char::da } },
+            { 'A', { Char::_aa } },
             { 'n', { Char::na } },
-            { '\006', { Char::na, Char::halant } },
+            { '\006', { Char::na, Char::virama } },
             { 't', { Char::ta } },
+            { 'T', { Char::tha } },
+            { 'B', { Char::bha } },
+            { 'g', { Char::ga } },
+            { 'v', { Char::va } },
+            { '(', { Char::ta, Char::virama} },
+            { 'p', { Char::pa } },
         };
 
         for (int i = 0; i < str.getLen(); ++i) {

@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_CASE(Devanagari_Srii) {
     devanagari::convertFromTex(s);
 
     ensureStringIs(s, {
-        devanagari::Char::za,
-        devanagari::Char::halant,
+        devanagari::Char::sha,
+        devanagari::Char::virama,
         devanagari::Char::ra,
         devanagari::Char::_ii});
 }
@@ -56,10 +56,16 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     using namespace devanagari;
     devanagariTest("m", { Char::ma });
     devanagariTest("d", { Char::da });
-    devanagariTest("A", { Char::_a });
+    devanagariTest("A", { Char::_aa });
     devanagariTest("n", { Char::na });
-    devanagariTest("\006", { Char::na, Char::halant });
+    devanagariTest("\006", { Char::na, Char::virama });
     devanagariTest("t", { Char::ta });
+    devanagariTest("T", { Char::tha });
+    devanagariTest("B", { Char::bha });
+    devanagariTest("g", { Char::ga });
+    devanagariTest("v", { Char::va });
+    devanagariTest("(", { Char::ta, Char::virama });
+    devanagariTest("p", { Char::pa });
 }
 
 BOOST_AUTO_TEST_CASE(Devanagari_unknownLettersAreShownAsHexCodes) {
