@@ -66,6 +66,14 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     devanagariTest("v", { Char::va });
     devanagariTest("(", { Char::ta, Char::virama });
     devanagariTest("p", { Char::pa });
+    devanagariTest(",", { Char::_visarga });
+    devanagariTest("r", { Char::ra });
+    devanagariTest("\213", { Char::da, Char::virama, Char::ga });
+    devanagariTest("y", { Char::ya });
+    devanagariTest("s", { Char::sa });
+    devanagariTest("0123456789", {
+        Char::zero, Char::one, Char::two, Char::three, Char::four,
+        Char::five, Char::six, Char::seven, Char::eight, Char::nine });
 }
 
 BOOST_AUTO_TEST_CASE(Devanagari_unknownLettersAreShownAsHexCodes) {

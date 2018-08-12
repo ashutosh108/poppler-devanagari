@@ -7,10 +7,10 @@ namespace devanagari {
     void convertFromTex(HtmlString &str);
 
     enum Char : Unicode {
-        inverted_candrabindu = 0x0900, // DEVANAGARI SIGN INVERTED CANDRABINDU (U+0900)	ऀ
-        candrabindu = 0x0901, // DEVANAGARI SIGN CANDRABINDU (U+0901)	ँ
-        anusvara = 0x0902, // DEVANAGARI SIGN ANUSVARA (U+0902)	ं
-        visarga = 0x0903, // DEVANAGARI SIGN VISARGA (U+0903)	ः
+        _inverted_candrabindu = 0x0900, // DEVANAGARI SIGN INVERTED CANDRABINDU (U+0900)	ऀ
+        _candrabindu = 0x0901, // DEVANAGARI SIGN CANDRABINDU (U+0901)	ँ
+        _anusvara = 0x0902, // DEVANAGARI SIGN ANUSVARA (U+0902)	ं
+        _visarga = 0x0903, // DEVANAGARI SIGN VISARGA (U+0903)	ः
         short_a = 0x0904, // DEVANAGARI LETTER SHORT A (U+0904)	ऄ
         a = 0x0905, // DEVANAGARI LETTER A (U+0905)	अ
         aa = 0x0906, // DEVANAGARI LETTER AA (U+0906)	आ

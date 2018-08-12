@@ -1359,7 +1359,7 @@ void HtmlOutputDev::endPage() {
   delete linksList;
 
   pages->conv();
-  pages->coalesce();
+  //pages->coalesce();
   pages->dump(page, pageNum);
   
   // I don't yet know what to do in the case when there are pages of different
