@@ -97,7 +97,7 @@ public:
   void endString(); // postprocessing
   int getLen() const { return len; }
   Unicode & operator[](int i) { return text[i]; }
-  void replaceChar(int index, std::initializer_list<Unicode> chars);
+  void replaceChar(int index, std::vector<Unicode> chars);
   void reserve(int capacity);
 
 private:

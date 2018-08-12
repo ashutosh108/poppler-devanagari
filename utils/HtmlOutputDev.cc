@@ -296,7 +296,7 @@ void HtmlString::endString()
   }
 }
 
-void HtmlString::replaceChar(int index, std::initializer_list<Unicode> chars) {
+void HtmlString::replaceChar(int index, std::vector<Unicode> chars) {
     assert(index < len);
     HtmlString & s = *this; // alias to avoid visual clutter of (*this)[i]
     size_t size = chars.size();
