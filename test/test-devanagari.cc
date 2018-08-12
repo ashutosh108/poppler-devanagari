@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(Devanagari_OM) {
 
     devanagari::convertFromTex(s);
 
-    ensureStringIs(s, { devanagari::Char::OM });
+    ensureStringIs(s, { devanagari::Char::om });
 }
 
 BOOST_AUTO_TEST_CASE(Devanagari_Srii) {
@@ -38,10 +38,10 @@ BOOST_AUTO_TEST_CASE(Devanagari_Srii) {
     devanagari::convertFromTex(s);
 
     ensureStringIs(s, {
-        devanagari::Char::Z,
-        devanagari::Char::HALANT,
-        devanagari::Char::R,
-        devanagari::Char::_II});
+        devanagari::Char::za,
+        devanagari::Char::halant,
+        devanagari::Char::ra,
+        devanagari::Char::_ii});
 }
 
 void devanagariTest(const char *source, std::initializer_list<Unicode> expected) {
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     devanagariTest("d", { Char::da });
     devanagariTest("A", { Char::_a });
     devanagariTest("n", { Char::na });
-    devanagariTest("\006", { Char::na, Char::HALANT });
+    devanagariTest("\006", { Char::na, Char::halant });
     devanagariTest("t", { Char::ta });
 }
 

@@ -8,14 +8,14 @@ namespace devanagari {
     void convertFromTex(HtmlString &str) {
         using Chars = std::vector<Unicode>;
         static std::map<char, Chars> map = {
-            { ':', { Char::OM } },
-            { '\200', { Char::Z, Char::HALANT, Char::R }},
-            { 'F', { Char::_II } },
+            { ':', { Char::om } },
+            { '\200', { Char::za, Char::halant, Char::ra }},
+            { 'F', { Char::_ii } },
             { 'm', { Char::ma } },
             { 'd', { Char::da } },
             { 'A', { Char::_a } },
             { 'n', { Char::na } },
-            { '\006', { Char::na, Char::HALANT } },
+            { '\006', { Char::na, Char::halant } },
             { 't', { Char::ta } },
         };
 
