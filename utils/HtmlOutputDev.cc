@@ -1392,6 +1392,12 @@ void HtmlOutputDev::drawChar(GfxState *state, double x, double y,
   if ( !showHidden && (state->getRender() & 3) == 3) {
     return;
   }
+  // hack: ignore font encoding tables for some kinds of emberred fonts in TeX-produced devanagari files
+  // Otherwise some mappings loose information (e.g. more than one char maps to unicode \r).
+  if (devanagariConvertTex && state->getFont()->getType() == fontType3 && uLen >= 1) {
+      *u = code;
+      uLen = 1;
+  }
   pages->addChar(state, x, y, dx, dy, originX, originY, u, uLen);
 }
 
