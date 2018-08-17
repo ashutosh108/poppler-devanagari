@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE HtmlString
+#define BOOST_TEST_MODULE devanagari
 #include <boost/test/unit_test.hpp>
 #include <iomanip>
 #include <sstream>
@@ -9,14 +9,14 @@
 
 using namespace devanagari;
 
-void ensureStringIs(HtmlString & s, std::initializer_list<Unicode> expected) {
+void ensureStringIs(HtmlString & s, std::initializer_list<Unicode> expected, char const * source) {
     int len = expected.size();
     BOOST_TEST(s.getLen() == len);
     int minLen = std::min(s.getLen(), len);
     int i = 0;
     for (auto c : expected) {
         std::stringstream stream;
-        stream << "s[" << i << "] = 0x" <<
+        stream << "'" << source << "': s[" << i << "] = 0x" <<
             std::hex << std::setfill('0') << std::setw(sizeof(c) * 2) <<
             s[i] << ", expected 0x" << c;
         BOOST_TEST(s[i] == c, stream.str());
@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(Devanagari_OM) {
 
     devanagari::convertFromTex(s);
 
-    ensureStringIs(s, { devanagari::Char::om });
+    ensureStringIs(s, { devanagari::Char::om }, "om");
 }
 
 BOOST_AUTO_TEST_CASE(Devanagari_Srii) {
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(Devanagari_Srii) {
         devanagari::Char::sha,
         devanagari::Char::virama,
         devanagari::Char::ra,
-        devanagari::Char::_ii});
+        devanagari::Char::_ii}, "shrii");
 }
 
 void devanagariTest(const char *source, std::initializer_list<Unicode> expected) {
@@ -49,7 +49,7 @@ void devanagariTest(const char *source, std::initializer_list<Unicode> expected)
 
     devanagari::convertFromTex(s);
 
-    ensureStringIs(s, expected);
+    ensureStringIs(s, expected, source);
 }
 
 BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
@@ -74,6 +74,7 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     devanagariTest("0123456789", {
         Char::zero, Char::one, Char::two, Char::three, Char::four,
         Char::five, Char::six, Char::seven, Char::eight, Char::nine });
+    devanagariTest("c", { Char::ca });
 }
 
 BOOST_AUTO_TEST_CASE(Devanagari_unknownLettersAreShownAsHexCodes) {

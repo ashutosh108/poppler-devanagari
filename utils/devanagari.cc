@@ -40,6 +40,7 @@ namespace devanagari {
         { '7',{ Char::seven } },
         { '8',{ Char::eight } },
         { '9',{ Char::nine } },
+        { 'c',{ Char::ca } },
         };
 
         for (int i = 0; i < str.getLen(); ++i) {
