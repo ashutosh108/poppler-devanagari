@@ -44,6 +44,8 @@ namespace devanagari {
         };
 
         for (int i = 0; i < str.getLen(); ++i) {
+            // only process chars from 8-bit fonts
+            if (str[i] >= 256) continue;
             auto found = map.find(str[i]);
             if (found != map.end()) {
                 str.replaceChar(i, found->second);

@@ -80,3 +80,12 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
 BOOST_AUTO_TEST_CASE(Devanagari_unknownLettersAreShownAsHexCodes) {
     devanagariTest("#", { '<', '2', '3', '>' });
 }
+
+BOOST_AUTO_TEST_CASE(Devanagari_keep_chars_above_255_undecoded) {
+    NEW_HTML_STRING(s, "");
+    addChar(s, 0x201c);
+
+    devanagari::convertFromTex(s);
+
+    ensureStringIs(s, { 0x201c }, "fancy quote char");
+}

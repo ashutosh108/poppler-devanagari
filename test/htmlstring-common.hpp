@@ -54,7 +54,7 @@ public:
     addString(name, init_str);
 
 // unsigned to avoid converting e.g. 0x80 to 0xffffff80 on platforms with signed char
-void addChar(HtmlString &s, unsigned char c) {
+void addChar(HtmlString &s, Unicode c) {
     s.addChar(nullptr, 10.0, 10.0, 1, 0, c);
 }
 
