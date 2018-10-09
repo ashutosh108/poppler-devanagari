@@ -61,7 +61,7 @@ void addChar(HtmlString &s, Unicode c) {
 void addString(HtmlString &hs, const char *s) {
     int len = strlen(s);
     for (int i = 0; i < len; ++i) {
-        addChar(hs, s[i]);
+        addChar(hs, static_cast<unsigned char>(s[i]));
     }
 }
 
