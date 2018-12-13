@@ -68,7 +68,7 @@ add_executable(test-htmlstring
 	../utils/devanagari.cc)
 target_link_libraries(test-htmlstring poppler Boost::unit_test_framework)
 target_include_directories(test-htmlstring PRIVATE "${CMAKE_SOURCE_DIR}/utils")
-add_test(NAME test_htmlstring COMMAND test-htmlstring)
+add_test(NAME test_htmlstring COMMAND test-htmlstring WORKING_DIRECTORY $<TARGET_FILE_DIR:poppler>)
 
 add_executable(test-devanagari test-devanagari.cc
 	../utils/HtmlOutputDev.cc
@@ -77,4 +77,4 @@ add_executable(test-devanagari test-devanagari.cc
 	../utils/devanagari.cc)
 	target_link_libraries(test-devanagari poppler Boost::unit_test_framework)
 	target_include_directories(test-devanagari PRIVATE "${CMAKE_SOURCE_DIR}/utils")
-add_test(NAME test-devanagari COMMAND test-devanagari)
+add_test(NAME test-devanagari COMMAND test-devanagari WORKING_DIRECTORY $<TARGET_FILE_DIR:poppler>)
