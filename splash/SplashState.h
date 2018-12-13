@@ -23,10 +23,6 @@
 #ifndef SPLASHSTATE_H
 #define SPLASHSTATE_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
 #include "SplashTypes.h"
 
 class SplashPattern;
@@ -58,9 +54,9 @@ class SplashState {
 public:
 
   // Create a new state object, initialized with default settings.
-  SplashState(int width, int height, GBool vectorAntialias,
+  SplashState(int width, int height, bool vectorAntialias,
 	      SplashScreenParams *screenParams);
-  SplashState(int width, int height, GBool vectorAntialias,
+  SplashState(int width, int height, bool vectorAntialias,
 	      SplashScreen *screenA);
 
   // Copy a state object.
@@ -88,12 +84,12 @@ public:
   void setSoftMask(SplashBitmap *softMaskA);
 
   // Set the overprint parametes.
-  void setFillOverprint(GBool fillOverprintA) { fillOverprint = fillOverprintA; }
-  void setStrokeOverprint(GBool strokeOverprintA) { strokeOverprint = strokeOverprintA; }
+  void setFillOverprint(bool fillOverprintA) { fillOverprint = fillOverprintA; }
+  void setStrokeOverprint(bool strokeOverprintA) { strokeOverprint = strokeOverprintA; }
   void setOverprintMode(int overprintModeA) { overprintMode = overprintModeA; }
 
   // Set the transfer function.
-  void setTransfer(Guchar *red, Guchar *green, Guchar *blue, Guchar *gray);
+  void setTransfer(unsigned char *red, unsigned char *green, unsigned char *blue, unsigned char *gray);
 
 private:
 
@@ -106,7 +102,7 @@ private:
   SplashBlendFunc blendFunc;
   SplashCoord strokeAlpha;
   SplashCoord fillAlpha;
-  GBool multiplyPatternAlpha;
+  bool multiplyPatternAlpha;
   SplashCoord patternStrokeAlpha;
   SplashCoord patternFillAlpha;
   SplashCoord lineWidth;
@@ -117,27 +113,27 @@ private:
   SplashCoord *lineDash;
   int lineDashLength;
   SplashCoord lineDashPhase;
-  GBool strokeAdjust;
+  bool strokeAdjust;
   SplashClip *clip;
   SplashBitmap *softMask;
-  GBool deleteSoftMask;
-  GBool inNonIsolatedGroup;
-  GBool fillOverprint;
-  GBool strokeOverprint;
+  bool deleteSoftMask;
+  bool inNonIsolatedGroup;
+  bool fillOverprint;
+  bool strokeOverprint;
   int overprintMode;
-  Guchar rgbTransferR[256],
+  unsigned char rgbTransferR[256],
          rgbTransferG[256],
          rgbTransferB[256];
-  Guchar grayTransfer[256];
+  unsigned char grayTransfer[256];
 #ifdef SPLASH_CMYK
-  Guchar cmykTransferC[256],
+  unsigned char cmykTransferC[256],
          cmykTransferM[256],
          cmykTransferY[256],
          cmykTransferK[256];
-  Guchar deviceNTransfer[SPOT_NCOMPS+4][256];
+  unsigned char deviceNTransfer[SPOT_NCOMPS+4][256];
 #endif
-  Guint overprintMask;
-  GBool overprintAdditive;
+  unsigned int overprintMask;
+  bool overprintAdditive;
 
   SplashState *next;		// used by Splash class
 

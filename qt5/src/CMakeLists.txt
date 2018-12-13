@@ -1,11 +1,16 @@
 add_definitions(${QT5_DEFINITIONS})
 add_definitions(${Qt5Core_DEFINITIONS})
+add_definitions(-DQT_NO_SIGNALS_SLOTS_KEYWORDS)
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${Qt5Core_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 set(poppler_qt5_SRCS
   poppler-annotation.cc
@@ -30,7 +35,7 @@ set(poppler_qt5_SRCS
   ArthurOutputDev.cc
 )
 add_library(poppler-qt5 ${poppler_qt5_SRCS})
-set_target_properties(poppler-qt5 PROPERTIES VERSION 1.15.0 SOVERSION 1)
+set_target_properties(poppler-qt5 PROPERTIES VERSION 1.17.0 SOVERSION 1)
 if(MINGW)
     get_target_property(POPPLER_QT5_SOVERSION poppler-qt5 SOVERSION)
     set_target_properties(poppler-qt5 PROPERTIES SUFFIX "-${POPPLER_QT5_SOVERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")

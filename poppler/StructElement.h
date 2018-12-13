@@ -7,17 +7,13 @@
 // Copyright 2013, 2014 Igalia S.L.
 // Copyright 2014 Luigi Scarso <luigi.scarso@gmail.com>
 // Copyright 2014, 2018 Albert Astals Cid <aacid@kde.org>
+// Copyright 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 //========================================================================
 
 #ifndef STRUCTELEMENT_H
 #define STRUCTELEMENT_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
-#include "goo/gtypes.h"
 #include "goo/GooString.h"
 #include "MarkedContentOutputDev.h"
 #include "Object.h"
@@ -76,9 +72,9 @@ public:
   Attribute(Type type, Object *value);
 
   // Creates an UserProperty attribute, with an arbitrary name and value.
-  Attribute(const char *name, int nameLen, Object *value);
+  Attribute(GooString &&name, Object *value);
 
-  GBool isOk() const { return type != Unknown; }
+  bool isOk() const { return type != Unknown; }
 
   // Name, type and value can be set only on construction.
   Type getType() const { return type; }
@@ -92,16 +88,16 @@ public:
   GooString *getName() const { return type == UserProperty ? name.copy() : new GooString(getTypeName()); }
 
   // The revision is optional, and defaults to zero.
-  Guint getRevision() const { return revision; }
-  void setRevision(Guint revisionA) { revision = revisionA; }
+  unsigned int getRevision() const { return revision; }
+  void setRevision(unsigned int revisionA) { revision = revisionA; }
 
   // Hidden elements should not be displayed by the user agent
-  GBool isHidden() const { return hidden; }
-  void setHidden(GBool hiddenA) { hidden = hiddenA; }
+  bool isHidden() const { return hidden; }
+  void setHidden(bool hiddenA) { hidden = hiddenA; }
 
-  // The formatted value may be in the PDF, or be left undefined (NULL).
+  // The formatted value may be in the PDF, or be left undefined (nullptr).
   // In the later case the user agent should provide a default representation.
-  const char *getFormattedValue() const { return formatted ? formatted->getCString() : NULL; }
+  const char *getFormattedValue() const { return formatted ? formatted->c_str() : nullptr; }
   void setFormattedValue(const char *formattedA);
 
   ~Attribute();
@@ -109,14 +105,14 @@ public:
 private:
   Type type;
   Owner owner;
-  Guint revision;
+  unsigned int revision;
   mutable GooString name;
   mutable Object value;
-  GBool hidden;
+  bool hidden;
   GooString *formatted;
 
-  GBool checkType(StructElement *element = NULL);
-  static Type getTypeForName(const char *name, StructElement *element = NULL);
+  bool checkType(StructElement *element = nullptr);
+  static Type getTypeForName(const char *name, StructElement *element = nullptr);
   static Attribute *parseUserProperty(Dict *property);
 
   friend class StructElement;
@@ -153,19 +149,19 @@ public:
 
   const char *getTypeName() const;
   Type getType() const { return type; }
-  GBool isOk() const { return type != Unknown; }
-  GBool isBlock() const;
-  GBool isInline() const;
-  GBool isGrouping() const;
+  bool isOk() const { return type != Unknown; }
+  bool isBlock() const;
+  bool isInline() const;
+  bool isGrouping() const;
 
-  inline GBool isContent() const { return (type == MCID) || isObjectRef(); }
-  inline GBool isObjectRef() const { return (type == OBJR && c->ref.num != -1 && c->ref.gen != -1); }
+  inline bool isContent() const { return (type == MCID) || isObjectRef(); }
+  inline bool isObjectRef() const { return (type == OBJR && c->ref.num != -1 && c->ref.gen != -1); }
 
   int getMCID() const { return c->mcid; }
   Ref getObjectRef() const { return c->ref; }
   Ref getParentRef() { return isContent() ? parent->getParentRef() : s->parentRef.getRef(); }
-  GBool hasPageRef() const;
-  GBool getPageRef(Ref& ref) const;
+  bool hasPageRef() const;
+  bool getPageRef(Ref& ref) const;
   StructTreeRoot *getStructTreeRoot() { return treeRoot; }
 
   // Optional element identifier.
@@ -175,16 +171,16 @@ public:
   // Optional ISO language name, e.g. en_US
   GooString *getLanguage() {
     if (!isContent() && s->language) return s->language;
-    return parent ? parent->getLanguage() : NULL;
+    return parent ? parent->getLanguage() : nullptr;
   }
   const GooString *getLanguage() const {
     if (!isContent() && s->language) return s->language;
-    return parent ? parent->getLanguage() : NULL;
+    return parent ? parent->getLanguage() : nullptr;
   }
 
   // Optional revision number, defaults to zero.
-  Guint getRevision() const { return isContent() ? 0 : s->revision; }
-  void setRevision(Guint revision) { if (isContent()) s->revision = revision; }
+  unsigned int getRevision() const { return isContent() ? 0 : s->revision; }
+  void setRevision(unsigned int revision) { if (isContent()) s->revision = revision; }
 
   // Optional element title, in human-readable form.
   const GooString *getTitle() const { return isContent() ? nullptr : s->title; }
@@ -214,7 +210,7 @@ public:
     }
   }
 
-  const Attribute* findAttribute(Attribute::Type attributeType, GBool inherit = gFalse,
+  const Attribute* findAttribute(Attribute::Type attributeType, bool inherit = false,
                                  Attribute::Owner owner = Attribute::UnknownOwner) const;
 
   const GooString *getAltText() const { return isContent() ? nullptr : s->altText; }
@@ -232,11 +228,11 @@ public:
   //   enclosed by *all* the child MCID reference elements of the subtree
   //   is returned. The text is assembled by traversing the leaf MCID
   //   reference elements in logical order.
-  // - In any other case, the function returns NULL.
+  // - In any other case, the function returns nullptr.
   //
   // A new string is returned, and the ownership passed to the caller.
   //
-  GooString *getText(GBool recursive = gTrue) const {
+  GooString *getText(bool recursive = true) const {
     return appendSubTreeText(nullptr, recursive);
   }
 
@@ -250,7 +246,7 @@ public:
   ~StructElement();
 
 private:
-  GooString* appendSubTreeText(GooString *string, GBool recursive) const;
+  GooString* appendSubTreeText(GooString *string, bool recursive) const;
   const TextSpanArray& getTextSpansInternal(MarkedContentOutputDev& mcdev) const;
 
   typedef std::vector<Attribute*>     AttrPtrArray;
@@ -264,7 +260,7 @@ private:
     GooString   *title;
     GooString   *expandedAbbr;
     GooString   *language;
-    Guint        revision;
+    unsigned int        revision;
     ElemPtrArray elements;
     AttrPtrArray attributes;
 
@@ -283,7 +279,7 @@ private:
     };
 
     ContentData(int mcidA): mcid(mcidA) {}
-    ContentData(const Ref& r) { ref.num = r.num; ref.gen = r.gen; }
+    ContentData(const Ref r) { ref.num = r.num; ref.gen = r.gen; }
   };
 
   // Common data
@@ -299,12 +295,12 @@ private:
 
   StructElement(Dict *elementDict, StructTreeRoot *treeRootA, StructElement *parentA, std::set<int> &seen);
   StructElement(int mcid, StructTreeRoot *treeRootA, StructElement *parentA);
-  StructElement(const Ref &ref, StructTreeRoot *treeRootA, StructElement *parentA);
+  StructElement(const Ref ref, StructTreeRoot *treeRootA, StructElement *parentA);
 
   void parse(Dict* elementDict);
   StructElement* parseChild(Object *ref, Object* childObj, std::set<int> &seen);
   void parseChildren(Dict* element, std::set<int> &seen);
-  void parseAttributes(Dict *element, GBool keepExisting = gFalse);
+  void parseAttributes(Dict *element, bool keepExisting = false);
 
   friend class StructTreeRoot;
 };

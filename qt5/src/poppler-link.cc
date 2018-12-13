@@ -5,6 +5,7 @@
  * Copyright (C) 2012, Tobias Koenig <tokoe@kdab.com>
  * Copyright (C) 2012, Guillermo A. Amaral B. <gamaral@kde.org>
  * Copyright (C) 2018 Intevation GmbH <intevation@intevation.de>
+ * Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
  * Adapting code from
  *   Copyright (C) 2004 by Enrico Ros <eros.kde@email.it>
  *
@@ -34,11 +35,6 @@
 
 #include "Link.h"
 #include "Rendition.h"
-
-static bool operator==( const Ref &r1, const Ref &r2 )
-{
-	return r1.num == r2.num && r1.gen == r2.gen;
-}
 
 namespace Poppler {
 
@@ -152,7 +148,7 @@ class LinkSoundPrivate : public LinkPrivate
 class LinkRenditionPrivate : public LinkPrivate
 {
 	public:
-		LinkRenditionPrivate( const QRectF &area, ::MediaRendition *rendition, ::LinkRendition::RenditionOperation operation, const QString &script, const Ref &annotationReference );
+		LinkRenditionPrivate( const QRectF &area, ::MediaRendition *rendition, ::LinkRendition::RenditionOperation operation, const QString &script, const Ref annotationReference );
 		~LinkRenditionPrivate();
 
 		MediaRendition *rendition;
@@ -161,7 +157,7 @@ class LinkRenditionPrivate : public LinkPrivate
 		Ref annotationReference;
 };
 
-	LinkRenditionPrivate::LinkRenditionPrivate( const QRectF &area, ::MediaRendition *r, ::LinkRendition::RenditionOperation operation, const QString &javaScript, const Ref &ref )
+	LinkRenditionPrivate::LinkRenditionPrivate( const QRectF &area, ::MediaRendition *r, ::LinkRendition::RenditionOperation operation, const QString &javaScript, const Ref ref )
 		: LinkPrivate( area )
 		, rendition( r ? new MediaRendition( r ) : nullptr )
 		, action( LinkRendition::PlayRendition )
@@ -209,14 +205,14 @@ class LinkJavaScriptPrivate : public LinkPrivate
 class LinkMoviePrivate : public LinkPrivate
 {
 	public:
-		LinkMoviePrivate( const QRectF &area, LinkMovie::Operation operation, const QString &title, const Ref &reference );
+		LinkMoviePrivate( const QRectF &area, LinkMovie::Operation operation, const QString &title, const Ref reference );
 
 		LinkMovie::Operation operation;
 		QString annotationTitle;
 		Ref annotationReference;
 };
 
-	LinkMoviePrivate::LinkMoviePrivate( const QRectF &area, LinkMovie::Operation _operation, const QString &title, const Ref &reference  )
+	LinkMoviePrivate::LinkMoviePrivate( const QRectF &area, LinkMovie::Operation _operation, const QString &title, const Ref reference  )
 		: LinkPrivate( area ), operation( _operation ), annotationTitle( title ), annotationReference( reference )
 	{
 	}
@@ -243,7 +239,7 @@ class LinkMoviePrivate : public LinkPrivate
 		// in case this destination was named one, and it was not resolved
 		if ( data.namedDest && !ld )
 		{
-			d->name = QString::fromLatin1( data.namedDest->getCString() );
+			d->name = QString::fromLatin1( data.namedDest->c_str() );
 		}
 		
 		if (!ld) return;
@@ -434,7 +430,7 @@ class LinkMoviePrivate : public LinkPrivate
 	}
 
 	// LinkGoto
-	LinkGoto::LinkGoto( const QRectF &linkArea, QString extFileName, const LinkDestination & destination )
+	LinkGoto::LinkGoto( const QRectF &linkArea, QString extFileName, const LinkDestination & destination ) // clazy:exclude=function-args-by-ref
 		: Link( *new LinkGotoPrivate( linkArea, destination ) )
 	{
 		Q_D( LinkGoto );
@@ -595,7 +591,7 @@ class LinkMoviePrivate : public LinkPrivate
 	}
 
 	// LinkRendition
-	LinkRendition::LinkRendition( const QRectF &linkArea, ::MediaRendition *rendition, int operation, const QString &script, const Ref &annotationReference )
+	LinkRendition::LinkRendition( const QRectF &linkArea, ::MediaRendition *rendition, int operation, const QString &script, const Ref &annotationReference ) // clazy:exclude=function-args-by-value
 		: Link( *new LinkRenditionPrivate( linkArea, rendition, static_cast<enum ::LinkRendition::RenditionOperation>(operation), script, annotationReference ) )
 	{
 	}
@@ -662,7 +658,7 @@ class LinkMoviePrivate : public LinkPrivate
 	}
 
 	// LinkMovie
-	LinkMovie::LinkMovie( const QRectF &linkArea, Operation operation, const QString &annotationTitle, const Ref &annotationReference )
+	LinkMovie::LinkMovie( const QRectF &linkArea, Operation operation, const QString &annotationTitle, const Ref &annotationReference ) // clazy:exclude=function-args-by-value
 		: Link( *new LinkMoviePrivate( linkArea, operation, annotationTitle, annotationReference ) )
 	{
 	}

@@ -23,12 +23,6 @@
 #ifndef FOFIBASE_H
 #define FOFIBASE_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
-#include "goo/gtypes.h"
-
 //------------------------------------------------------------------------
 
 typedef void (*FoFiOutputFunc)(void *stream, const char *data, int len);
@@ -46,27 +40,26 @@ public:
 
 protected:
 
-  FoFiBase(char *fileA, int lenA, GBool freeFileDataA);
-  static char *readFile(char *fileName, int *fileLen);
+  FoFiBase(const char *fileA, int lenA, bool freeFileDataA);
+  static char *readFile(const char *fileName, int *fileLen);
 
   // S = signed / U = unsigned
   // 8/16/32/Var = word length, in bytes
   // BE = big endian
-  int getS8(int pos, GBool *ok);
-  int getU8(int pos, GBool *ok);
-  int getS16BE(int pos, GBool *ok);
-  int getU16BE(int pos, GBool *ok);
-  int getS32BE(int pos, GBool *ok);
-  Guint getU32BE(int pos, GBool *ok);
-  Guint getU32LE(int pos, GBool *ok);
-  Guint getUVarBE(int pos, int size, GBool *ok);
+  int getS8(int pos, bool *ok) const;
+  int getU8(int pos, bool *ok) const;
+  int getS16BE(int pos, bool *ok) const;
+  int getU16BE(int pos, bool *ok) const;
+  int getS32BE(int pos, bool *ok) const;
+  unsigned int getU32BE(int pos, bool *ok) const;
+  unsigned int getU32LE(int pos, bool *ok) const;
+  unsigned int getUVarBE(int pos, int size, bool *ok) const;
 
-  GBool checkRegion(int pos, int size);
+  bool checkRegion(int pos, int size) const;
 
-  Guchar *fileData;
-  Guchar *file;
+  const unsigned char *file;
   int len;
-  GBool freeFileData;
+  bool freeFileData;
 };
 
 #endif

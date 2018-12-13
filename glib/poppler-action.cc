@@ -329,7 +329,7 @@ dest_new_named (const GooString *named_dest)
 	}
 
 	dest->type = POPPLER_DEST_NAMED;
-	dest->named_dest = g_strdup (named_dest->getCString ());
+	dest->named_dest = g_strdup (named_dest->c_str ());
 
 	return dest;
 }
@@ -392,10 +392,10 @@ build_launch (PopplerAction *action,
 	      const LinkLaunch    *link)
 {
 	if (link->getFileName()) {
-		action->launch.file_name = g_strdup (link->getFileName()->getCString ());
+		action->launch.file_name = g_strdup (link->getFileName()->c_str ());
 	}
 	if (link->getParams()) {
-		action->launch.params = g_strdup (link->getParams()->getCString ());
+		action->launch.params = g_strdup (link->getParams()->c_str ());
 	}
 }
 
@@ -405,7 +405,7 @@ build_uri (PopplerAction *action,
 {
 	const gchar *uri;
 
-	uri = link->getURI()->getCString ();
+	uri = link->getURI()->c_str ();
 	if (uri != nullptr)
 		action->uri.uri = g_strdup (uri);
 }
@@ -416,7 +416,7 @@ build_named (PopplerAction *action,
 {
 	const gchar *name;
 
-	name = link->getName ()->getCString ();
+	name = link->getName ()->c_str ();
 	if (name != nullptr)
 		action->named.named_dest = g_strdup (name);
 }
@@ -444,7 +444,7 @@ find_annot_movie_for_action (PopplerDocument *document,
       Object annots = p->getAnnotsObject ();
       if (annots.isArray ()) {
         int j;
-	GBool found = gFalse;
+	bool found = false;
 
 	for (j = 0; j < annots.arrayGetLength () && !found; ++j) {
           annotObj = annots.arrayGet(j);
@@ -459,7 +459,7 @@ find_annot_movie_for_action (PopplerDocument *document,
 	      const GooString *t = obj1.getString ();
 
 	      if (title->cmp(t) == 0)
-	        found = gTrue;
+	        found = true;
 	    }
 	  }
 	  if (!found)
@@ -477,7 +477,7 @@ find_annot_movie_for_action (PopplerDocument *document,
   if (annotObj.isDict ()) {
     Object tmp;
 
-    annot = new AnnotMovie (document->doc, &annotObj, &tmp);
+    annot = new AnnotMovie (document->doc, std::move(annotObj), &tmp);
     if (!annot->isOk ()) {
       delete annot;
       annot = nullptr;
@@ -578,7 +578,7 @@ build_ocg_state (PopplerDocument *document,
 		 const LinkOCGState    *ocg_state)
 {
 	const GooList *st_list = ocg_state->getStateList();
-	GBool    preserve_rb = ocg_state->getPreserveRB();
+	bool    preserve_rb = ocg_state->getPreserveRB();
 	gint     i, j;
 	GList   *layer_state = nullptr;
 

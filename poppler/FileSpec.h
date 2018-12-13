@@ -16,15 +16,11 @@
 #ifndef FILE_SPEC_H
 #define FILE_SPEC_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
 #include "Object.h"
 
 class EmbFile {
 public:
-  EmbFile(const Object *efStream);
+  EmbFile(Object &&efStream);
   ~EmbFile();
 
   EmbFile(const EmbFile &) = delete;
@@ -36,12 +32,12 @@ public:
   const GooString *checksum() const { return m_checksum; }
   const GooString *mimeType() const { return m_mimetype; }
   Object *streamObject() { return &m_objStr; }
-  Stream *stream() { return isOk() ? m_objStr.getStream() : NULL; }
-  GBool isOk() const { return m_objStr.isStream(); }
-  GBool save(const char *path);
+  Stream *stream() { return isOk() ? m_objStr.getStream() : nullptr; }
+  bool isOk() const { return m_objStr.isStream(); }
+  bool save(const char *path);
 
 private:
-  GBool save2(FILE *f);
+  bool save2(FILE *f);
 
   int m_size;
   GooString *m_createDate;
@@ -59,7 +55,7 @@ public:
   FileSpec(const FileSpec &) = delete;
   FileSpec& operator=(const FileSpec &) = delete;
 
-  GBool isOk() const { return ok; }
+  bool isOk() const { return ok; }
 
   const GooString *getFileName() const { return fileName; }
   GooString *getFileNameForPlatform();
@@ -67,7 +63,7 @@ public:
   EmbFile *getEmbeddedFile();
 
 private:
-  GBool ok;
+  bool ok;
 
   Object fileSpec;
 

@@ -12,15 +12,6 @@
 #ifndef FLATESTREAM_H
 #define FLATESTREAM_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
-
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #include "poppler-config.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,7 +44,7 @@ public:
   virtual int getRawChar() override;
   virtual void getRawChars(int nChars, int *buffer) override;
   virtual GooString *getPSFilter(int psLevel, const char *indent) override;
-  virtual GBool isBinary(GBool last = gTrue) override;
+  virtual bool isBinary(bool last = true) override;
 
 private:
   inline int doGetRawChar() {

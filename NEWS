@@ -1,3 +1,134 @@
+Release 0.72.0:
+        core:
+         * Fix checkbox lacking AP not bein able to change state. Issue #655
+         * Draw line annotation endings (arrow, circle, ...)
+         * cairo: Don't use UNIQUE_ID for PS output, to avoid using PS memory on cairo >= 1.5.10
+         * Be more stubborn looking for a nssdb. Issue #669
+         * GooString::fromInt: Repair the return value.
+         * Minor performance improvements
+         * Avoid cycles in PDF parsing
+         * Stream::makeFilter: Fix memory leak
+         * Fix various issues with malformed files
+         * Rename GooString::getCString to GooString::c_str
+         * Regenerate UnicodeDecompTables.h from python 3.7.1
+
+        utils:
+         * pdfdetach: Check for valid embedded file before trying to save it. Issue #661
+         * pdfdetach: Check for valid file name of embedded file before using it to determine save path. Issue #660
+         * Fix typos in utils.
+
+        glib:
+         * Fix missing PopplerAttachment destructor call
+         * Support getting form widget additional actions.
+         * docs: Small improvements
+
+        qt5:
+         * Internally compile with -DQT_NO_SIGNALS_SLOTS_KEYWORDS
+
+Release 0.71.0:
+        core:
+         * Replace the implementation of GooString by std::string but keep the exact interface intact.
+         * Replace GBool, gTrue, and gFalse by bool, true, false, resp.
+         * Splash: Fix crash if document is malformed (too wide)
+
+        qt5:
+         * Fix crash when adding Highlight Annotations
+         * Default to hidden symbols
+         * Fix two leaks in a test
+
+        glib:
+         * demo: Fix build on Windows
+         * demo: Align property labels to top of cell
+
+        cpp:
+         * Fix typos in documentation
+
+        build system:
+         * Enable searching for GTK on Windows
+         * Remove unused files
+         * Add fuzzer target from oss-fuzz project
+
+Release 0.70.1
+        glib:
+         * Install missing file
+
+Release 0.70.0
+        core:
+         * FreeText annotations: default to font from default appearance string
+         * Splash: Speed improvements
+         * Fix security issues found by oss-fuzz
+         * Improve page lable parsing
+         * Use std some std classes instead of self grown ones
+         * Various internal improvements
+
+        qt5:
+         * Add Page::index() method
+         * Improve method to get the page from a label string
+
+        glib:
+         * Fix crash on missing embedded file
+         * Add support for PDF subtype property
+         * Only export symbols in the public API
+
+        utils:
+         * pdftohtml: Improve font handling
+
+Release 0.69.0
+        core:
+         * Add annotation font color
+         * Splash: Some speed improvements
+         * PSOutputDev: add native support for type 7 shadings when using level 3
+         * Add support for PDF subtype property
+         * Link: Fix memory leak regarding next actions
+         * Fix handling of Signature Info Location and Reason
+         * Fix errors in computation of type3 glyphs transformation matrix
+         * Reimplement Dict class in a more modern way
+         * Fix security issues found by oss-fuzz
+         * Fix memory issues in GfxImageColorMap copy ctor
+         * Don't abort if the SampleFunction has too many samples. Issue #634
+         * Document the OutputDev::clip and OutputDev::oeClip methods
+         * fix macOS compilation due to boolean define in jpeglib
+         * Split GDir and GDirEntry out of gfile.h. Issue #370
+
+        qt5:
+         * Add annotation font color
+
+        cpp:
+
+        utils:
+         * pdfinfo: Show PDF subtype
+         * pdftotext: Fix only outputs first page content with -bbox-layout option. Issue #88
+         * pdftotext: Fix memory leak in printLine
+
+
+        build system:
+         * Require C++14
+
+Release 0.68.0
+        core:
+         * Add Reason and Location to SignatureInfo. Bug #107299
+         * Fix memory misuse on signature handling
+         * Fix security issues found by oss-fuzz
+         * Don't give a warning when Marked value is false. Bug #107430
+
+        qt5:
+         * Add Reason and Location to SignatureInfo. Bug #107299
+
+        cpp:
+         * Add rotation() to text_box. Bug #106562
+         * Fix build with MSVC
+
+        utils:
+         * pdftoppm: Add -jpegopt optimize option support
+         * pdftocairo: Add -jpegopt optimize option support
+         * pdftohtml: Add option to not round coordinates
+         * pdftohtml: Fix possible crash. Bug #107316
+
+        build system:
+         * Use OpenJpeg cmake config file instead of pkgconfig
+         * Remove wchar_t- on MSVC
+
+
 Release 0.67.0
         core:
          * Fix lots of security/leak issues found by oss-fuzz

@@ -30,17 +30,10 @@
 #ifndef CHARCODETOUNICODE_H
 #define CHARCODETOUNICODE_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
+#include <atomic>
 
 #include "poppler-config.h"
 #include "CharTypes.h"
-#include "goo/gtypes.h"
-
-#ifdef MULTITHREADED
-#include "goo/GooMutex.h"
-#endif
 
 struct CharCodeToUnicodeString;
 class GooString;
@@ -87,7 +80,7 @@ public:
   void decRefCnt();
 
   // Return true if this mapping matches the specified <tagA>.
-  GBool match(GooString *tagA);
+  bool match(GooString *tagA);
 
   // Set the mapping for <c>.
   void setMapping(CharCode c, Unicode *u, int len);
@@ -111,7 +104,7 @@ private:
   CharCodeToUnicode();
   CharCodeToUnicode(GooString *tagA);
   CharCodeToUnicode(GooString *tagA, Unicode *mapA,
-		    CharCode mapLenA, GBool copyMap,
+		    CharCode mapLenA, bool copyMap,
 		    CharCodeToUnicodeString *sMapA,
 		    int sMapLenA, int sMapSizeA);
 
@@ -120,11 +113,8 @@ private:
   CharCode mapLen;
   CharCodeToUnicodeString *sMap;
   int sMapLen, sMapSize;
-  int refCnt;
-  GBool isIdentity;
-#ifdef MULTITHREADED
-  GooMutex mutex;
-#endif
+  std::atomic_int refCnt;
+  bool isIdentity;
 };
 
 //------------------------------------------------------------------------

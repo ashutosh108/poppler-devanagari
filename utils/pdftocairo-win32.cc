@@ -4,7 +4,7 @@
 //
 // Copyright (C) 2014 Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 // Copyright (C) 2014, 2017 Adrian Johnson <ajohnson@redneon.com>
-// Copyright (C) 2017 Albert Astals Cid <aacid@kde.org>
+// Copyright (C) 2017, 2018 Albert Astals Cid <aacid@kde.org>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -67,7 +67,7 @@ static void parseSource(GooString *source)
     }
     option++;
   }
-  fprintf(stderr, "Warning: Unknown paper source \"%s\"\n", source->getCString());
+  fprintf(stderr, "Warning: Unknown paper source \"%s\"\n", source->c_str());
 }
 
 static const Win32Option win32DuplexMode[] =
@@ -89,10 +89,10 @@ static void parseDuplex(GooString *mode)
     }
     option++;
   }
-  fprintf(stderr, "Warning: Unknown duplex mode \"%s\"\n", mode->getCString());
+  fprintf(stderr, "Warning: Unknown duplex mode \"%s\"\n", mode->c_str());
 }
 
-static void fillCommonPrinterOptions(GBool duplex)
+static void fillCommonPrinterOptions(bool duplex)
 {
   if (duplex) {
     devmode->dmDuplex = DMDUP_HORIZONTAL;
@@ -118,10 +118,10 @@ static void fillPagePrinterOptions(double w, double h)
 }
 
 
-static void fillPrinterOptions(GBool duplex, GooString *printOpt)
+static void fillPrinterOptions(bool duplex, GooString *printOpt)
 {
   //printOpt format is: <opt1>=<val1>,<opt2>=<val2>,...
-  const char *nextOpt = printOpt->getCString();
+  const char *nextOpt = printOpt->c_str();
   while (nextOpt && *nextOpt)
   {
     const char *comma = strchr(nextOpt, ',');
@@ -134,12 +134,12 @@ static void fillPrinterOptions(GBool duplex, GooString *printOpt)
       nextOpt = NULL;
     }
     //here opt is "<optN>=<valN> "
-    const char *equal = strchr(opt.getCString(), '=');
+    const char *equal = strchr(opt.c_str(), '=');
     if (!equal) {
-      fprintf(stderr, "Warning: unknown printer option \"%s\"\n", opt.getCString());
+      fprintf(stderr, "Warning: unknown printer option \"%s\"\n", opt.c_str());
       continue;
     }
-    int iequal = equal - opt.getCString();
+    int iequal = equal - opt.c_str();
     GooString value(&opt, iequal + 1, opt.getLength() - iequal - 1);
     opt.del(iequal, opt.getLength() - iequal);
     //here opt is "<optN>" and value is "<valN>"
@@ -152,7 +152,7 @@ static void fillPrinterOptions(GBool duplex, GooString *printOpt)
       else
 	parseDuplex( &value);
     } else {
-      fprintf(stderr, "Warning: unknown printer option \"%s\"\n", opt.getCString());
+      fprintf(stderr, "Warning: unknown printer option \"%s\"\n", opt.c_str());
     }
   }
 }
@@ -235,8 +235,8 @@ enum PageScale { NONE = 0, SHRINK = 1, FIT = 2 };
 
 // used to set/get option values in printDialogHookProc
 static PageScale pageScale;
-static GBool centerPage;
-static GBool useOrigPageSize;
+static bool centerPage;
+static bool useOrigPageSize;
 
 // PrintDlg callback to customize the print dialog with additional controls.
 static UINT_PTR CALLBACK printDialogHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
@@ -364,15 +364,15 @@ static UINT_PTR CALLBACK printDialogHookProc(HWND hdlg, UINT uiMsg, WPARAM wPara
 }
 
 void win32SetupPrinter(GooString *printer, GooString *printOpt,
-		       GBool duplex, GBool setupdlg)
+		       bool duplex, bool setupdlg)
 {
-  if (printer->getCString()[0] == 0) {
+  if (printer->c_str()[0] == 0) {
     DWORD size = 0;
     GetDefaultPrinterA(nullptr, &size);
     printerName = (char*)gmalloc(size);
     GetDefaultPrinterA(printerName, &size);
   } else {
-    printerName = gstrndup(printer->getCString(), printer->getLength());
+    printerName = copyString(printer->c_str(), printer->getLength());
   }
 
   //Query the size of the DEVMODE struct
@@ -417,8 +417,8 @@ void win32SetupPrinter(GooString *printer, GooString *printOpt,
   }
 }
 
-void win32ShowPrintDialog(GBool *expand, GBool *noShrink, GBool *noCenter,
-			  GBool *usePDFPageSize, GBool *allPages,
+void win32ShowPrintDialog(bool *expand, bool *noShrink, bool *noCenter,
+			  bool *usePDFPageSize, bool *allPages,
 			  int *firstPage, int *lastPage, int maxPages)
 {
   PRINTDLG pd;
@@ -455,21 +455,21 @@ void win32ShowPrintDialog(GBool *expand, GBool *noShrink, GBool *noCenter,
     devmode = (DEVMODEA*)GlobalLock(hDevmode);
     hdc = pd.hDC;
     if (pd.Flags & PD_PAGENUMS) {
-      *allPages = gFalse;
+      *allPages = false;
       *firstPage = pd.nFromPage;
       *lastPage = pd.nToPage;
     } else {
-      *allPages = gTrue;
+      *allPages = true;
     }
     if (pageScale == NONE) {
-      *expand = gFalse;
-      *noShrink = gTrue;
+      *expand = false;
+      *noShrink = true;
     } else if (pageScale == SHRINK) {
-      *expand = gFalse;
-      *noShrink = gFalse;
+      *expand = false;
+      *noShrink = false;
     } else {
-      *expand = gTrue;
-      *noShrink = gFalse;
+      *expand = true;
+      *noShrink = false;
     }
     *noCenter = !centerPage;
     *usePDFPageSize = useOrigPageSize;
@@ -487,9 +487,9 @@ cairo_surface_t *win32BeginDocument(GooString *inputFileName, GooString *outputF
   if (inputFileName->cmp("fd://0") == 0)
     docinfo.lpszDocName = "pdftocairo <stdin>";
   else
-    docinfo.lpszDocName = inputFileName->getCString();
+    docinfo.lpszDocName = inputFileName->c_str();
   if (outputFileName)
-    docinfo.lpszOutput = outputFileName->getCString();
+    docinfo.lpszOutput = outputFileName->c_str();
   if (StartDocA(hdc, &docinfo) <=0) {
     fprintf(stderr, "Error: StartDoc failed\n");
     exit(99);
@@ -498,7 +498,7 @@ cairo_surface_t *win32BeginDocument(GooString *inputFileName, GooString *outputF
   return cairo_win32_printing_surface_create(hdc);
 }
 
-void win32BeginPage(double *w, double *h, GBool changePageSize, GBool useFullPage)
+void win32BeginPage(double *w, double *h, bool changePageSize, bool useFullPage)
 {
   if (changePageSize)
     fillPagePrinterOptions(*w, *h);

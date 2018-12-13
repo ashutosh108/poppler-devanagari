@@ -20,6 +20,8 @@
 // Copyright (C) 2013 Adrian Johnson <ajohnson@redneon.com>
 // Copyright (C) 2013 Thomas Freitag <Thomas.Freitag@alfa.de>
 // Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
+// Copyright (C) 2018 Marek Kasik <mkasik@redhat.com>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -27,10 +29,6 @@
 //========================================================================
 
 #include <config.h>
-
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
 
 #include <stddef.h>
 #include "Object.h"
@@ -46,7 +44,7 @@
 // lots of nested arrays that made us consume all the stack
 #define recursionLimit 500
 
-Parser::Parser(XRef *xrefA, Lexer *lexerA, GBool allowStreamsA) {
+Parser::Parser(XRef *xrefA, Lexer *lexerA, bool allowStreamsA) {
   xref = xrefA;
   lexer = lexerA;
   inlineImg = 0;
@@ -61,14 +59,14 @@ Parser::~Parser() {
 
 Object Parser::getObj(int recursion)
 {
-  return getObj(gFalse, nullptr, cryptRC4, 0, 0, 0, recursion);
+  return getObj(false, nullptr, cryptRC4, 0, 0, 0, recursion);
 }
 
-Object Parser::getObj(GBool simpleOnly,
-           Guchar *fileKey,
+Object Parser::getObj(bool simpleOnly,
+           unsigned char *fileKey,
 		       CryptAlgorithm encAlgorithm, int keyLength,
 		       int objNum, int objGen, int recursion,
-		       GBool strict) {
+		       bool strict) {
   Object obj;
   Stream *str;
   DecryptStream *decrypt;
@@ -92,7 +90,7 @@ Object Parser::getObj(GBool simpleOnly,
     shift();
     obj = Object(new Array(xref));
     while (!buf1.isCmd("]") && !buf1.isEOF() && recursion + 1 < recursionLimit) {
-      Object obj2 = getObj(gFalse, fileKey, encAlgorithm, keyLength, objNum, objGen, recursion + 1);
+      Object obj2 = getObj(false, fileKey, encAlgorithm, keyLength, objNum, objGen, recursion + 1);
       obj.arrayAdd(std::move(obj2));
     }
     if (recursion + 1 >= recursionLimit && strict) goto err;
@@ -112,20 +110,18 @@ Object Parser::getObj(GBool simpleOnly,
 	if (strict) goto err;
 	shift();
       } else {
-	// buf1 might go away in shift(), so construct the key
-	char *key = copyString(buf1.getName());
+	// buf1 will go away in shift(), so keep the key
+	const auto key = std::move(buf1);
 	shift();
 	if (buf1.isEOF() || buf1.isError()) {
-	  gfree(key);
 	  if (strict && buf1.isError()) goto err;
 	  break;
 	}
-	Object obj2 = getObj(gFalse, fileKey, encAlgorithm, keyLength, objNum, objGen, recursion + 1);
+	Object obj2 = getObj(false, fileKey, encAlgorithm, keyLength, objNum, objGen, recursion + 1);
 	if (unlikely(obj2.isError() && recursion + 1 >= recursionLimit)) {
-	  gfree(key);
 	  break;
 	}
-	obj.dictAdd(key, std::move(obj2));
+	obj.dictAdd(key.getName(), std::move(obj2));
       }
     }
     if (buf1.isEOF()) {
@@ -168,7 +164,7 @@ Object Parser::getObj(GBool simpleOnly,
   } else if (buf1.isString() && fileKey) {
     s = buf1.getString();
     s2 = new GooString();
-    decrypt = new DecryptStream(new MemStream(s->getCString(), 0, s->getLength(), Object(objNull)),
+    decrypt = new DecryptStream(new MemStream(s->c_str(), 0, s->getLength(), Object(objNull)),
 				fileKey, encAlgorithm, keyLength,
 				objNum, objGen);
     decrypt->reset();
@@ -194,14 +190,29 @@ err:
   return Object(objError);
 }
 
-Stream *Parser::makeStream(Object &&dict, Guchar *fileKey,
+Stream *Parser::makeStream(Object &&dict, unsigned char *fileKey,
 			   CryptAlgorithm encAlgorithm, int keyLength,
 			   int objNum, int objGen, int recursion,
-                           GBool strict) {
+                           bool strict) {
   BaseStream *baseStr;
   Stream *str;
   Goffset length;
   Goffset pos, endPos;
+
+
+  if (xref) {
+    XRefEntry *entry = xref->getEntry(objNum, false);
+    if (entry) {
+      if (!entry->getFlag(XRefEntry::Parsing) ||
+	  (objNum == 0 && objGen == 0)) {
+	entry->setFlag(XRefEntry::Parsing, true);
+      } else {
+	error(errSyntaxError, getPos(),
+	      "Object '{0:d} {1:d} obj' is being already parsed", objNum, objGen);
+	return nullptr;
+      }
+    }
+  }
 
   // get stream start position
   lexer->skipToNextLine();
@@ -266,13 +277,13 @@ Stream *Parser::makeStream(Object &&dict, Guchar *fileKey,
       // When building the xref we can't use it so use this
       // kludge for broken PDF files: just add 5k to the length, and
       // hope its enough
-      if (length < LLONG_MAX - 5000)
+      if (length < LLONG_MAX - pos - 5000)
         length += 5000;
     }
   }
 
   // make base stream
-  str = baseStr->makeSubStream(pos, gTrue, length, std::move(dict));
+  str = baseStr->makeSubStream(pos, true, length, std::move(dict));
 
   // handle decryption
   if (fileKey) {
@@ -282,6 +293,16 @@ Stream *Parser::makeStream(Object &&dict, Guchar *fileKey,
 
   // get filters
   str = str->addFilters(str->getDict(), recursion);
+
+  if (xref) {
+    // Don't try to reuse the entry from the block at the start
+    // of the function, xref can change in the middle because of
+    // reconstruction
+    XRefEntry *entry = xref->getEntry(objNum, false);
+    if (entry) {
+      entry->setFlag(XRefEntry::Parsing, false);
+    }
+  }
 
   return str;
 }

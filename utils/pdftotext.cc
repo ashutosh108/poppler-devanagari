@@ -27,6 +27,8 @@
 // Copyright (C) 2015 Jeremy Echols <jechols@uoregon.edu>
 // Copyright (C) 2017 Adrian Johnson <ajohnson@redneon.com>
 // Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
+// Copyright (C) 2018 Sanchit Anand <sanxchit@gmail.com>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -76,21 +78,21 @@ static int x = 0;
 static int y = 0;
 static int w = 0;
 static int h = 0;
-static GBool bbox = gFalse;
-static GBool bboxLayout = gFalse;
-static GBool physLayout = gFalse;
+static bool bbox = false;
+static bool bboxLayout = false;
+static bool physLayout = false;
 static double fixedPitch = 0;
-static GBool rawOrder = gFalse;
-static GBool htmlMeta = gFalse;
+static bool rawOrder = false;
+static bool htmlMeta = false;
 static char textEncName[128] = "";
 static char textEOL[16] = "";
-static GBool noPageBreaks = gFalse;
+static bool noPageBreaks = false;
 static char ownerPassword[33] = "\001";
 static char userPassword[33] = "\001";
-static GBool quiet = gFalse;
-static GBool printVersion = gFalse;
-static GBool printHelp = gFalse;
-static GBool printEnc = gFalse;
+static bool quiet = false;
+static bool printVersion = false;
+static bool printHelp = false;
+static bool printEnc = false;
 
 static const ArgDesc argDesc[] = {
   {"-f",       argInt,      &firstPage,     0,
@@ -179,8 +181,7 @@ int main(int argc, char *argv[]) {
   FILE *f;
   UnicodeMap *uMap;
   Object info;
-  GBool ok;
-  char *p;
+  bool ok;
   int exitCode;
 
   Win32Console win32Console(&argc, &argv);
@@ -189,10 +190,10 @@ int main(int argc, char *argv[]) {
   // parse args
   ok = parseArgs(argDesc, &argc, argv);
   if (bboxLayout) {
-    bbox = gTrue;
+    bbox = true;
   }
   if (bbox) {
-    htmlMeta = gTrue;
+    htmlMeta = true;
   }
   if (!ok || (argc < 2 && !printEnc) || argc > 3 || printVersion || printHelp) {
     fprintf(stderr, "pdftotext version %s\n", PACKAGE_VERSION);
@@ -218,7 +219,7 @@ int main(int argc, char *argv[]) {
 
   fileName = new GooString(argv[1]);
   if (fixedPitch) {
-    physLayout = gTrue;
+    physLayout = true;
   }
 
   if (textEncName[0]) {
@@ -230,7 +231,7 @@ int main(int argc, char *argv[]) {
     }
   }
   if (noPageBreaks) {
-    globalParams->setTextPageBreaks(gFalse);
+    globalParams->setTextPageBreaks(false);
   }
   if (quiet) {
     globalParams->setErrQuiet(quiet);
@@ -286,12 +287,12 @@ int main(int argc, char *argv[]) {
   if (argc == 3) {
     textFileName = new GooString(argv[2]);
   } else if (fileName->cmp("fd://0") == 0) {
-     error(errCommandLine, -1, "You have to provide an output filename when reading form stdin.");
+     error(errCommandLine, -1, "You have to provide an output filename when reading from stdin.");
      goto err2;
   } else {
-    p = fileName->getCString() + fileName->getLength() - 4;
+    const char *p = fileName->c_str() + fileName->getLength() - 4;
     if (!strcmp(p, ".pdf") || !strcmp(p, ".PDF")) {
-      textFileName = new GooString(fileName->getCString(),
+      textFileName = new GooString(fileName->c_str(),
 				 fileName->getLength() - 4);
     } else {
       textFileName = fileName->copy();
@@ -318,7 +319,7 @@ int main(int argc, char *argv[]) {
     if (!textFileName->cmp("-")) {
       f = stdout;
     } else {
-      if (!(f = fopen(textFileName->getCString(), "wb"))) {
+      if (!(f = fopen(textFileName->c_str(), "wb"))) {
 	error(errIO, -1, "Couldn't open text file '{0:t}'", textFileName);
 	exitCode = 2;
 	goto err3;
@@ -376,17 +377,17 @@ int main(int argc, char *argv[]) {
       fclose(f);
     }
   } else {
-    textOut = new TextOutputDev(textFileName->getCString(),
+    textOut = new TextOutputDev(textFileName->c_str(),
 				physLayout, fixedPitch, rawOrder, htmlMeta);
     if (textOut->isOk()) {
       if ((w==0) && (h==0) && (x==0) && (y==0)) {
 	doc->displayPages(textOut, firstPage, lastPage, resolution, resolution, 0,
-			  gTrue, gFalse, gFalse);
+			  true, false, false);
       } else {
 	
 	for (int page = firstPage; page <= lastPage; ++page) {
 	  doc->displayPageSlice(textOut, page, resolution, resolution, 0,
-			      gTrue, gFalse, gFalse, 
+			      true, false, false, 
 			      x, y, w, h);
 	}
       }
@@ -404,7 +405,7 @@ int main(int argc, char *argv[]) {
     if (!textFileName->cmp("-")) {
       f = stdout;
     } else {
-      if (!(f = fopen(textFileName->getCString(), "ab"))) {
+      if (!(f = fopen(textFileName->c_str(), "ab"))) {
 	error(errIO, -1, "Couldn't open text file '{0:t}'", textFileName);
 	exitCode = 2;
 	goto err3;
@@ -431,17 +432,13 @@ int main(int argc, char *argv[]) {
   delete globalParams;
  err0:
 
-  // check for memory leaks
-  Object::memCheck(stderr);
-  gMemReport(stderr);
-
   return exitCode;
 }
 
 static void printInfoString(FILE *f, Dict *infoDict, const char *key,
 			    const char *text1, const char *text2, UnicodeMap *uMap) {
   const GooString *s1;
-  GBool isUnicode;
+  bool isUnicode;
   Unicode u;
   char buf[9];
   int i, n;
@@ -452,10 +449,10 @@ static void printInfoString(FILE *f, Dict *infoDict, const char *key,
     s1 = obj.getString();
     if ((s1->getChar(0) & 0xff) == 0xfe &&
 	(s1->getChar(1) & 0xff) == 0xff) {
-      isUnicode = gTrue;
+      isUnicode = true;
       i = 2;
     } else {
-      isUnicode = gFalse;
+      isUnicode = false;
       i = 0;
     }
     while (i < obj.getString()->getLength()) {
@@ -479,7 +476,7 @@ static void printInfoString(FILE *f, Dict *infoDict, const char *key,
 static void printInfoDate(FILE *f, Dict *infoDict, const char *key, const char *fmt) {
   Object obj = infoDict->lookup(key);
   if (obj.isString()) {
-    const char *s = obj.getString()->getCString();
+    const char *s = obj.getString()->c_str();
     if (s[0] == 'D' && s[1] == ':') {
       s += 2;
     }
@@ -502,9 +499,11 @@ static void printLine(FILE *f, TextLine *line) {
     if (lineXMax < xMax) lineXMax = xMax;
     if (lineYMax < yMax) lineYMax = yMax;
 
-    const std::string myString = myXmlTokenReplace(word->getText()->getCString());
+    GooString *wordText = word->getText();
+    const std::string myString = myXmlTokenReplace(wordText->c_str());
     wordXML << "          <word xMin=\"" << xMin << "\" yMin=\"" << yMin << "\" xMax=\"" <<
             xMax << "\" yMax=\"" << yMax << "\">" << myString << "</word>\n";
+    delete wordText;
   }
   fprintf(f, "        <line xMin=\"%f\" yMin=\"%f\" xMax=\"%f\" yMax=\"%f\">\n",
           lineXMin, lineYMin, lineXMax, lineYMax);
@@ -514,7 +513,6 @@ static void printLine(FILE *f, TextLine *line) {
 
 void printDocBBox(FILE *f, PDFDoc *doc, TextOutputDev *textOut, int first, int last) {
   double xMin, yMin, xMax, yMax;
-  TextPage *textPage;
   TextFlow *flow;
   TextBlock *blk;
   TextLine *line;
@@ -522,9 +520,8 @@ void printDocBBox(FILE *f, PDFDoc *doc, TextOutputDev *textOut, int first, int l
   fprintf(f, "<doc>\n");
   for (int page = first; page <= last; ++page) {
     fprintf(f, "  <page width=\"%f\" height=\"%f\">\n",doc->getPageMediaWidth(page), doc->getPageMediaHeight(page));
-    doc->displayPage(textOut, page, resolution, resolution, 0, gTrue, gFalse, gFalse);
-    textPage = textOut->takeText();
-    for (flow = textPage->getFlows(); flow; flow = flow->getNext()) {
+    doc->displayPage(textOut, page, resolution, resolution, 0, true, false, false);
+    for (flow = textOut->getFlows(); flow; flow = flow->getNext()) {
       fprintf(f, "    <flow>\n");
       for (blk = flow->getBlocks(); blk; blk = blk->getNext()) {
         blk->getBBox(&xMin, &yMin, &xMax, &yMax);
@@ -537,7 +534,6 @@ void printDocBBox(FILE *f, PDFDoc *doc, TextOutputDev *textOut, int first, int l
       fprintf(f, "    </flow>\n");
     }
     fprintf(f, "  </page>\n");
-    textPage->decRefCnt();
   }
   fprintf(f, "</doc>\n");
 }
@@ -546,7 +542,7 @@ void printWordBBox(FILE *f, PDFDoc *doc, TextOutputDev *textOut, int first, int 
   fprintf(f, "<doc>\n");
   for (int page = first; page <= last; ++page) {
     fprintf(f, "  <page width=\"%f\" height=\"%f\">\n",doc->getPageMediaWidth(page), doc->getPageMediaHeight(page));
-    doc->displayPage(textOut, page, resolution, resolution, 0, gTrue, gFalse, gFalse);
+    doc->displayPage(textOut, page, resolution, resolution, 0, true, false, false);
     TextWordList *wordlist = textOut->makeWordList();
     const int word_length = wordlist != nullptr ? wordlist->getLength() : 0;
     TextWord *word;
@@ -557,7 +553,7 @@ void printWordBBox(FILE *f, PDFDoc *doc, TextOutputDev *textOut, int first, int 
     for (int i = 0; i < word_length; ++i) {
       word = wordlist->get(i);
       word->getBBox(&xMinA, &yMinA, &xMaxA, &yMaxA);
-      const std::string myString = myXmlTokenReplace(word->getText()->getCString());
+      const std::string myString = myXmlTokenReplace(word->getText()->c_str());
       fprintf(f,"    <word xMin=\"%f\" yMin=\"%f\" xMax=\"%f\" yMax=\"%f\">%s</word>\n", xMinA, yMinA, xMaxA, yMaxA, myString.c_str());
     }
     fprintf(f, "  </page>\n");

@@ -12,7 +12,7 @@
 // under GPL version 2 or later
 //
 // Copyright (C) 2010 Paweł Wiejacha <pawel.wiejacha@gmail.com>
-// Copyright (C) 2010, 2011 Albert Astals Cid <aacid@kde.org>
+// Copyright (C) 2010, 2011, 2018 Albert Astals Cid <aacid@kde.org>
 // Copyright (C) 2013 Thomas Freitag <Thomas.Freitag@alfa.de>
 // Copyright (C) 2017 Adrian Johnson <ajohnson@redneon.com>
 //
@@ -23,14 +23,11 @@
 
 #include <config.h>
 
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
 #include "goo/gmem.h"
+#include "goo/GooLikely.h"
 #include "SplashMath.h"
 #include "SplashPath.h"
 #include "SplashXPath.h"
@@ -43,7 +40,7 @@ struct SplashXPathPoint {
 
 struct SplashXPathAdjust {
   int firstPt, lastPt;		// range of points
-  GBool vert;			// vertical or horizontal hint
+  bool vert;			// vertical or horizontal hint
   SplashCoord x0a, x0b,		// hint boundaries
               xma, xmb,
               x1a, x1b;
@@ -68,8 +65,8 @@ inline void SplashXPath::transform(SplashCoord *matrix,
 //------------------------------------------------------------------------
 
 SplashXPath::SplashXPath(SplashPath *path, SplashCoord *matrix,
-			 SplashCoord flatness, GBool closeSubpaths,
-			 GBool adjustLines, int linePosI) {
+			 SplashCoord flatness, bool closeSubpaths,
+			 bool adjustLines, int linePosI) {
   SplashPathHint *hint;
   SplashXPathPoint *pts;
   SplashXPathAdjust *adjusts, *adjust;
@@ -99,11 +96,11 @@ SplashXPath::SplashXPath(SplashPath *path, SplashCoord *matrix,
       x2 = pts[hint->ctrl1    ].x;    y2 = pts[hint->ctrl1    ].y;
       x3 = pts[hint->ctrl1 + 1].x;    y3 = pts[hint->ctrl1 + 1].y;
       if (x0 == x1 && x2 == x3) {
-	adjusts[i].vert = gTrue;
+	adjusts[i].vert = true;
 	adj0 = x0;
 	adj1 = x2;
       } else if (y0 == y1 && y2 == y3) {
-	adjusts[i].vert = gFalse;
+	adjusts[i].vert = false;
 	adj0 = y0;
 	adj1 = y2;
       } else {
@@ -272,7 +269,11 @@ void SplashXPath::grow(int nSegs) {
     while (size < length + nSegs) {
       size *= 2;
     }
-    segs = (SplashXPathSeg *)greallocn(segs, size, sizeof(SplashXPathSeg));
+    segs = (SplashXPathSeg *)greallocn_checkoverflow(segs, size, sizeof(SplashXPathSeg));
+    if (unlikely(!segs)) {
+	length = 0;
+	size = 0;
+    }
   }
 }
 
@@ -281,7 +282,7 @@ void SplashXPath::addCurve(SplashCoord x0, SplashCoord y0,
 			   SplashCoord x2, SplashCoord y2,
 			   SplashCoord x3, SplashCoord y3,
 			   SplashCoord flatness,
-			   GBool first, GBool last, GBool end0, GBool end1) {
+			   bool first, bool last, bool end0, bool end1) {
   SplashCoord *cx = new SplashCoord[(splashMaxCurveSplits + 1) * 3];
   SplashCoord *cy = new SplashCoord[(splashMaxCurveSplits + 1) * 3];
   int *cNext = new int[splashMaxCurveSplits + 1];
@@ -397,6 +398,8 @@ void SplashXPath::addCurve(SplashCoord x0, SplashCoord y0,
 void SplashXPath::addSegment(SplashCoord x0, SplashCoord y0,
 			     SplashCoord x1, SplashCoord y1) {
   grow(1);
+  if (unlikely(!segs))
+      return;
   segs[length].x0 = x0;
   segs[length].y0 = y0;
   segs[length].x1 = x1;

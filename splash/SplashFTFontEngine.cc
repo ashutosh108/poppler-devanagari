@@ -24,10 +24,6 @@
 
 #include <config.h>
 
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #include <stdio.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -50,8 +46,8 @@ extern "C" int unlink(char *filename);
 // SplashFTFontEngine
 //------------------------------------------------------------------------
 
-SplashFTFontEngine::SplashFTFontEngine(GBool aaA, GBool enableFreeTypeHintingA,
-				       GBool enableSlightHintingA, FT_Library libA) {
+SplashFTFontEngine::SplashFTFontEngine(bool aaA, bool enableFreeTypeHintingA,
+				       bool enableSlightHintingA, FT_Library libA) {
   FT_Int major, minor, patch;
 
   aa = aaA;
@@ -65,8 +61,8 @@ SplashFTFontEngine::SplashFTFontEngine(GBool aaA, GBool enableFreeTypeHintingA,
             (major == 2 && (minor > 1 || (minor == 1 && patch > 7)));
 }
 
-SplashFTFontEngine *SplashFTFontEngine::init(GBool aaA, GBool enableFreeTypeHintingA,
-					     GBool enableSlightHintingA) {
+SplashFTFontEngine *SplashFTFontEngine::init(bool aaA, bool enableFreeTypeHintingA,
+					     bool enableSlightHintingA) {
   FT_Library libA;
 
   if (FT_Init_FreeType(&libA)) {
@@ -110,7 +106,7 @@ SplashFontFile *SplashFTFontEngine::loadCIDFont(SplashFontFileID *idA,
     nCIDs = 0;
   } else {
     if (src->isFile) {
-      ff = FoFiType1C::load(src->fileName->getCString());
+      ff = FoFiType1C::load(src->fileName->c_str());
     } else {
       ff = FoFiType1C::make(src->buf, src->bufLen);
     }
@@ -143,7 +139,7 @@ SplashFontFile *SplashFTFontEngine::loadOpenTypeCFFFont(SplashFontFileID *idA,
   if (!codeToGID) {
     if (!useCIDs) {
       if (src->isFile) {
-        ff = FoFiTrueType::load(src->fileName->getCString());
+        ff = FoFiTrueType::load(src->fileName->c_str());
       } else {
         ff = FoFiTrueType::make(src->buf, src->bufLen);
       }

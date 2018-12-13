@@ -14,7 +14,7 @@
 // under GPL version 2 or later
 //
 // Copyright (C) 2010 Jakub Wilk <jwilk@jwilk.net>
-// Copyright (C) 2017 Albert Astals Cid <aacid@kde.org>
+// Copyright (C) 2017, 2018 Albert Astals Cid <aacid@kde.org>
 // Copyright (C) 2017 Adrian Johnson <ajohnson@redneon.com>
 // Copyright (C) 2017 Jean Ghali <jghali@libertysurf.fr>
 // Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
@@ -25,10 +25,6 @@
 //========================================================================
 
 #include <config.h>
-
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -48,7 +44,7 @@
 struct UnicodeMapExt {
   Unicode u;			// Unicode char
   char code[maxExtCode];
-  Guint nBytes;
+  unsigned int nBytes;
 };
 
 //------------------------------------------------------------------------
@@ -133,7 +129,7 @@ UnicodeMap *UnicodeMap::parse(GooString *encodingNameA) {
 
 UnicodeMap::UnicodeMap(GooString *encodingNameA) {
   encodingName = encodingNameA;
-  unicodeOut = gFalse;
+  unicodeOut = false;
   kind = unicodeMapUser;
   ranges = nullptr;
   len = 0;
@@ -142,7 +138,7 @@ UnicodeMap::UnicodeMap(GooString *encodingNameA) {
   refCnt = 1;
 }
 
-UnicodeMap::UnicodeMap(const char *encodingNameA, GBool unicodeOutA,
+UnicodeMap::UnicodeMap(const char *encodingNameA, bool unicodeOutA,
 		       UnicodeMapRange *rangesA, int lenA) {
   encodingName = new GooString(encodingNameA);
   unicodeOut = unicodeOutA;
@@ -154,7 +150,7 @@ UnicodeMap::UnicodeMap(const char *encodingNameA, GBool unicodeOutA,
   refCnt = 1;
 }
 
-UnicodeMap::UnicodeMap(const char *encodingNameA, GBool unicodeOutA,
+UnicodeMap::UnicodeMap(const char *encodingNameA, bool unicodeOutA,
 		       UnicodeMapFunc funcA) {
   encodingName = new GooString(encodingNameA);
   unicodeOut = unicodeOutA;
@@ -259,13 +255,13 @@ void UnicodeMap::decRefCnt() {
   }
 }
 
-GBool UnicodeMap::match(GooString *encodingNameA) {
+bool UnicodeMap::match(const GooString *encodingNameA) const {
   return !encodingName->cmp(encodingNameA);
 }
 
 int UnicodeMap::mapUnicode(Unicode u, char *buf, int bufSize) {
   int a, b, m, n, i, j;
-  Guint code;
+  unsigned int code;
 
   if (kind == unicodeMapFunc) {
     return (*func)(u, buf, bufSize);

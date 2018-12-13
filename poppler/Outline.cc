@@ -19,6 +19,7 @@
 // Copyright (C) 2016 Jason Crain <jason@aquaticape.us>
 // Copyright (C) 2017 Adrian Johnson <ajohnson@redneon.com>
 // Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -26,10 +27,6 @@
 //========================================================================
 
 #include <config.h>
-
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
 
 #include "goo/gmem.h"
 #include "goo/GooString.h"
@@ -53,7 +50,7 @@ Outline::Outline(const Object *outlineObj, XRef *xref) {
 
 Outline::~Outline() {
   if (items) {
-    deleteGooList(items, OutlineItem);
+    deleteGooList<OutlineItem>(items);
   }
 }
 
@@ -92,11 +89,11 @@ OutlineItem::OutlineItem(const Dict *dict, int refNumA, OutlineItem *parentA, XR
   lastRef = dict->lookupNF("Last");
   nextRef = dict->lookupNF("Next");
 
-  startsOpen = gFalse;
+  startsOpen = false;
   obj1 = dict->lookup("Count");
   if (obj1.isInt()) {
     if (obj1.getInt() > 0) {
-      startsOpen = gTrue;
+      startsOpen = true;
     }
   }
 }
@@ -134,7 +131,7 @@ GooList *OutlineItem::readItemList(OutlineItem *parent, const Object *firstItemR
     }
     alreadyRead[p->getRefNum()] = 1;
     OutlineItem *item = new OutlineItem(obj.getDict(), p->getRefNum(), parent, xrefA);
-    items->append(item);
+    items->push_back(item);
     p = &item->nextRef;
   }
 
@@ -156,7 +153,7 @@ void OutlineItem::open() {
 
 void OutlineItem::close() {
   if (kids) {
-    deleteGooList(kids, OutlineItem);
+    deleteGooList<OutlineItem>(kids);
     kids = nullptr;
   }
 }

@@ -12,6 +12,7 @@
  * Copyright (C) 2016 Jakub Alba <jakubalba@gmail.com>
  * Copyright (C) 2017 Christoph Cullmann <cullmann@kde.org>
  * Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+ * Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
  * Inspired on code by
  * Copyright (C) 2004 by Albert Astals Cid <tsdgeos@terra.es>
  * Copyright (C) 2004 by Enrico Ros <eros.kde@email.it>
@@ -35,6 +36,7 @@
 #define _POPPLER_PRIVATE_H_
 
 #include <QtCore/QFile>
+#include <QtCore/QMutex>
 #include <QtCore/QPointer>
 #include <QtCore/QVector>
 
@@ -58,13 +60,13 @@ class FormWidget;
 namespace Poppler {
 
     /* borrowed from kpdf */
-    QString unicodeToQString(const Unicode* u, int len);
+    POPPLER_QT5_EXPORT QString unicodeToQString(const Unicode* u, int len);
 
-    QString UnicodeParsedString(const GooString *s1);
+    POPPLER_QT5_EXPORT QString UnicodeParsedString(const GooString *s1);
 
-    GooString *QStringToUnicodeGooString(const QString &s);
+    POPPLER_QT5_EXPORT GooString *QStringToUnicodeGooString(const QString &s);
 
-    GooString *QStringToGooString(const QString &s);
+    POPPLER_QT5_EXPORT GooString *QStringToGooString(const QString &s);
 
     GooString *QDateTimeToUnicodeGooString(const QDateTime &dt);
 
@@ -152,6 +154,7 @@ namespace Poppler {
 	QColor paperColor;
 	int m_hints;
 	static int count;
+	static QMutex mutex;
     };
 
     class FontInfoData
@@ -166,8 +169,8 @@ namespace Poppler {
 		
 		FontInfoData( ::FontInfo* fi )
 		{
-			if (fi->getName()) fontName = fi->getName()->getCString();
-			if (fi->getFile()) fontFile = fi->getFile()->getCString();
+			if (fi->getName()) fontName = fi->getName()->c_str();
+			if (fi->getFile()) fontFile = fi->getFile()->c_str();
 			isEmbedded = fi->getEmbedded();
 			isSubset = fi->getSubset();
 			type = (Poppler::FontInfo::Type)fi->getType();

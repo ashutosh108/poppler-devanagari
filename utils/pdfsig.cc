@@ -106,20 +106,20 @@ static void dumpSignature(int sig_num, int sigCount, FormWidgetSignature *sig_wi
     // we don't want it to be replaced
     GooString *format = GooString::format("{{0:s}}.sig{{1:{0:d}d}}", sigCountLength);
     char *filenameCopy = strdup(filename);
-    GooString *path = GooString::format(format->getCString(), basename(filenameCopy), sig_num);
+    GooString *path = GooString::format(format->c_str(), basename(filenameCopy), sig_num);
     free(filenameCopy);
-    printf("Signature #%d (%u bytes) => %s\n", sig_num, signature->getLength(), path->getCString());
-    std::ofstream outfile(path->getCString(), std::ofstream::binary);
-    outfile.write(signature->getCString(), signature->getLength());
+    printf("Signature #%d (%u bytes) => %s\n", sig_num, signature->getLength(), path->c_str());
+    std::ofstream outfile(path->c_str(), std::ofstream::binary);
+    outfile.write(signature->c_str(), signature->getLength());
     outfile.close();
     delete format;
     delete path;
 }
 
-static GBool printVersion = gFalse;
-static GBool printHelp = gFalse;
-static GBool dontVerifyCert = gFalse;
-static GBool dumpSignatures = gFalse;
+static bool printVersion = false;
+static bool printHelp = false;
+static bool dontVerifyCert = false;
+static bool dumpSignatures = false;
 
 static const ArgDesc argDesc[] = {
   {"-nocert", argFlag,     &dontVerifyCert,     0,
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 
   Win32Console win32Console(&argc, &argv);
   int exitCode = 99;
-  GBool ok;
+  bool ok;
 
   ok = parseArgs(argDesc, &argc, argv);
 
@@ -184,14 +184,14 @@ int main(int argc, char *argv[])
     if (dumpSignatures) {
       printf("Dumping Signatures: %u\n", sigCount);
       for (unsigned int i = 0; i < sigCount; i++) {
-        dumpSignature(i, sigCount, sig_widgets.at(i), fileName->getCString());
+        dumpSignature(i, sigCount, sig_widgets.at(i), fileName->c_str());
       }
       goto end;
     } else {
-      printf("Digital Signature Info of: %s\n", fileName->getCString());
+      printf("Digital Signature Info of: %s\n", fileName->c_str());
     }
   } else {
-    printf("File '%s' does not contain any signatures\n", fileName->getCString());
+    printf("File '%s' does not contain any signatures\n", fileName->c_str());
     exitCode = 2;
     goto end;
   }

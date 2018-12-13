@@ -1,7 +1,7 @@
 /* poppler-qt.h: qt interface to poppler
  * Copyright (C) 2005, Net Integration Technologies, Inc.
  * Copyright (C) 2005, 2007, Brad Hards <bradh@frogmouth.net>
- * Copyright (C) 2005-2015, 2017, Albert Astals Cid <aacid@kde.org>
+ * Copyright (C) 2005-2015, 2017, 2018, Albert Astals Cid <aacid@kde.org>
  * Copyright (C) 2005, Stefan Kebekus <stefan.kebekus@math.uni-koeln.de>
  * Copyright (C) 2006-2011, Pino Toscano <pino@kde.org>
  * Copyright (C) 2009 Shawn Rutledge <shawn.t.rutledge@gmail.com>
@@ -18,6 +18,7 @@
  * Copyright (C) 2016 Jakub Alba <jakubalba@gmail.com>
  * Copyright (C) 2017 Oliver Sander <oliver.sander@tu-dresden.de>
  * Copyright (C) 2017, 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+ * Copyright (C) 2018 Nelson Benítez León <nbenitezl@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -739,7 +740,10 @@ delete it;
         {
             NoSearchFlags = 0x00000000, ///< since 0.63
             IgnoreCase = 0x00000001,    ///< Case differences are ignored
-            WholeWords = 0x00000002    ///< Only whole words are matched
+            WholeWords = 0x00000002,    ///< Only whole words are matched
+            IgnoreDiacritics = 0x00000004    ///< Diacritic differences (eg. accents, umlauts, diaeresis) are ignored. \since 0.73
+                                             ///< This option will have no effect if the search term contains characters which
+                                             ///< are not pure ascii.
         };
         Q_DECLARE_FLAGS( SearchFlags, SearchFlag )
 	
@@ -960,6 +964,13 @@ delete it;
 	**/
 	QString label() const;
 	
+	/**
+	   Returns the index of the page.
+
+	 \since 0.70
+	**/
+	int index() const;
+
     private:
 	Q_DISABLE_COPY(Page)
 

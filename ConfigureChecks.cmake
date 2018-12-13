@@ -4,6 +4,7 @@
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
 include(CheckIncludeFile)
+include(CheckIncludeFileCXX)
 include(CheckIncludeFiles)
 include(CheckSymbolExists)
 include(CheckFunctionExists)
@@ -17,6 +18,7 @@ check_include_files(stdlib.h HAVE_STDLIB_H)
 check_include_files(sys/mman.h HAVE_SYS_MMAN_H)
 check_include_files(sys/stat.h HAVE_SYS_STAT_H)
 check_include_files(unistd.h HAVE_UNISTD_H)
+check_include_file_cxx(codecvt HAVE_CODECVT)
 
 check_function_exists(fseek64 HAVE_FSEEK64)
 check_function_exists(fseeko HAVE_FSEEKO)
@@ -29,7 +31,6 @@ check_function_exists(gettimeofday HAVE_GETTIMEOFDAY)
 check_function_exists(localtime_r HAVE_LOCALTIME_R)
 check_function_exists(popen HAVE_POPEN)
 check_function_exists(mkstemp HAVE_MKSTEMP)
-check_function_exists(rand_r HAVE_RAND_R)
 check_function_exists(strcpy_s HAVE_STRCPY_S)
 check_function_exists(strcat_s HAVE_STRCAT_S)
 check_function_exists(strtok_r HAVE_STRTOK_R)

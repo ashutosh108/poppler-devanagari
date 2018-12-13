@@ -22,11 +22,6 @@
 #ifndef SPLASHFONTFILE_H
 #define SPLASHFONTFILE_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
-#include "goo/gtypes.h"
 #include "SplashTypes.h"
 
 class GooString;
@@ -45,14 +40,14 @@ public:
   SplashFontSrc(const SplashFontSrc &) = delete;
   SplashFontSrc& operator=(const SplashFontSrc&) = delete;
 
-  void setFile(GooString *file, GBool del);
-  void setFile(const char *file, GBool del);
-  void setBuf(char *bufA, int buflenA, GBool del);
+  void setFile(GooString *file, bool del);
+  void setFile(const char *file, bool del);
+  void setBuf(char *bufA, int buflenA, bool del);
 
   void ref();
   void unref();
 
-  GBool isFile;
+  bool isFile;
   GooString *fileName;
   char *buf;
   int bufLen;
@@ -60,7 +55,7 @@ public:
 private:
   ~SplashFontSrc();
   int refcnt;
-  GBool deleteSrc;
+  bool deleteSrc;
 };
 
 class SplashFontFile {
@@ -73,7 +68,7 @@ public:
 
   // Create a new SplashFont, i.e., a scaled instance of this font
   // file.
-  virtual SplashFont *makeFont(SplashCoord *mat, SplashCoord *textMat) = 0;
+  virtual SplashFont *makeFont(SplashCoord *mat, const SplashCoord *textMat) = 0;
 
   // Get the font file ID.
   SplashFontFileID *getID() { return id; }
@@ -85,7 +80,7 @@ public:
   // the SplashFontFile object.
   void decRefCnt();
 
-  GBool doAdjustMatrix;
+  bool doAdjustMatrix;
 
 protected:
 

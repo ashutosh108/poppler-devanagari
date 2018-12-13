@@ -31,6 +31,7 @@
 // Copyright (C) 2014 Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 // Copyright (C) 2016 Jason Crain <jason@aquaticape.us>
 // Copyright (C) 2018 Martin Packman <gzlist@googlemail.com>
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -45,7 +46,6 @@
 #include <string.h>
 #include "parseargs.h"
 #include "goo/gmem.h"
-#include "goo/gtypes.h"
 #include "goo/GooString.h"
 #include "goo/ImgWriter.h"
 #include "goo/JpegWriter.h"
@@ -75,21 +75,21 @@
 #include "pdftocairo-win32.h"
 
 
-static GBool png = gFalse;
-static GBool jpeg = gFalse;
-static GBool ps = gFalse;
-static GBool eps = gFalse;
-static GBool pdf = gFalse;
-static GBool printToWin32 = gFalse;
-static GBool printdlg = gFalse;
-static GBool svg = gFalse;
-static GBool tiff = gFalse;
+static bool png = false;
+static bool jpeg = false;
+static bool ps = false;
+static bool eps = false;
+static bool pdf = false;
+static bool printToWin32 = false;
+static bool printdlg = false;
+static bool svg = false;
+static bool tiff = false;
 
 static int firstPage = 1;
 static int lastPage = 0;
-static GBool printOnlyOdd = gFalse;
-static GBool printOnlyEven = gFalse;
-static GBool singleFile = gFalse;
+static bool printOnlyOdd = false;
+static bool printOnlyEven = false;
+static bool singleFile = false;
 static double resolution = 0.0;
 static double x_resolution = 150.0;
 static double y_resolution = 150.0;
@@ -101,31 +101,31 @@ static int crop_y = 0;
 static int crop_w = 0;
 static int crop_h = 0;
 static int sz = 0;
-static GBool useCropBox = gFalse;
-static GBool mono = gFalse;
-static GBool gray = gFalse;
-static GBool transp = gFalse;
+static bool useCropBox = false;
+static bool mono = false;
+static bool gray = false;
+static bool transp = false;
 static GooString antialias;
 static GooString icc;
 
-static GBool level2 = gFalse;
-static GBool level3 = gFalse;
-static GBool origPageSizes = gFalse;
+static bool level2 = false;
+static bool level3 = false;
+static bool origPageSizes = false;
 static char paperSize[15] = "";
 static int paperWidth = -1;
 static int paperHeight = -1;
-static GBool noCrop = gFalse;
-static GBool expand = gFalse;
-static GBool noShrink = gFalse;
-static GBool noCenter = gFalse;
-static GBool duplex = gFalse;
+static bool noCrop = false;
+static bool expand = false;
+static bool noShrink = false;
+static bool noCenter = false;
+static bool duplex = false;
 static char tiffCompressionStr[16] = "";
 
 static char ownerPassword[33] = "";
 static char userPassword[33] = "";
-static GBool quiet = gFalse;
-static GBool printVersion = gFalse;
-static GBool printHelp = gFalse;
+static bool quiet = false;
+static bool printVersion = false;
+static bool printHelp = false;
 
 static GooString jpegOpt;
 static int jpegQuality = -1;
@@ -135,7 +135,7 @@ static bool jpegOptimize = false;
 static GooString printer;
 static GooString printOpt;
 #ifdef CAIRO_HAS_WIN32_SURFACE
-static GBool setupdlg = gFalse;
+static bool setupdlg = false;
 #endif
 
 static const ArgDesc argDesc[] = {
@@ -277,9 +277,9 @@ static const ArgDesc argDesc[] = {
 
 
 static  cairo_surface_t *surface;
-static  GBool printing;
+static  bool printing;
 static  FILE *output_file;
-static GBool usePDFPageSize;
+static bool usePDFPageSize;
 static cairo_antialias_t antialiasEnum = CAIRO_ANTIALIAS_DEFAULT;
 
 #ifdef USE_CMS
@@ -306,31 +306,31 @@ static const AntiliasOption antialiasOptions[] =
   { nullptr,       CAIRO_ANTIALIAS_DEFAULT },
 };
 
-static GBool parseAntialiasOption()
+static bool parseAntialiasOption()
 {
   const AntiliasOption *option = antialiasOptions;
   while (option->name) {
     if (antialias.cmp(option->name) == 0) {
       antialiasEnum = option->value;
-      return gTrue;
+      return true;
     }
     option++;
   }
 
-  fprintf(stderr, "Error: Invalid antialias option \"%s\"\n", antialias.getCString());
+  fprintf(stderr, "Error: Invalid antialias option \"%s\"\n", antialias.c_str());
   fprintf(stderr, "Valid options are:\n");
   option = antialiasOptions;
   while (option->name) {
     fprintf(stderr, "  %s\n", option->name);
     option++;
   }
-  return gFalse;
+  return false;
 }
 
-static GBool parseJpegOptions()
+static bool parseJpegOptions()
 {
   //jpegOpt format is: <opt1>=<val1>,<opt2>=<val2>,...
-  const char *nextOpt = jpegOpt.getCString();
+  const char *nextOpt = jpegOpt.c_str();
   while (nextOpt && *nextOpt)
   {
     const char *comma = strchr(nextOpt, ',');
@@ -343,48 +343,48 @@ static GBool parseJpegOptions()
       nextOpt = nullptr;
     }
     //here opt is "<optN>=<valN> "
-    const char *equal = strchr(opt.getCString(), '=');
+    const char *equal = strchr(opt.c_str(), '=');
     if (!equal) {
-      fprintf(stderr, "Unknown jpeg option \"%s\"\n", opt.getCString());
-      return gFalse;
+      fprintf(stderr, "Unknown jpeg option \"%s\"\n", opt.c_str());
+      return false;
     }
-    int iequal = equal - opt.getCString();
+    int iequal = equal - opt.c_str();
     GooString value(&opt, iequal + 1, opt.getLength() - iequal - 1);
     opt.del(iequal, opt.getLength() - iequal);
     //here opt is "<optN>" and value is "<valN>"
 
     if (opt.cmp("quality") == 0) {
-      if (!isInt(value.getCString())) {
+      if (!isInt(value.c_str())) {
 	fprintf(stderr, "Invalid jpeg quality\n");
-	return gFalse;
+	return false;
       }
-      jpegQuality = atoi(value.getCString());
+      jpegQuality = atoi(value.c_str());
       if (jpegQuality < 0 || jpegQuality > 100) {
 	fprintf(stderr, "jpeg quality must be between 0 and 100\n");
-	return gFalse;
+	return false;
       }
     } else if (opt.cmp("progressive") == 0) {
-      jpegProgressive = gFalse;
+      jpegProgressive = false;
       if (value.cmp("y") == 0) {
-	jpegProgressive = gTrue;
+	jpegProgressive = true;
       } else if (value.cmp("n") != 0) {
 	fprintf(stderr, "jpeg progressive option must be \"y\" or \"n\"\n");
-	return gFalse;
+	return false;
       }
     } else if (opt.cmp("optimize") == 0 || opt.cmp("optimise") == 0) {
-      jpegOptimize = gFalse;
+      jpegOptimize = false;
       if (value.cmp("y") == 0) {
-	jpegOptimize = gTrue;
+	jpegOptimize = true;
       } else if (value.cmp("n") != 0) {
 	fprintf(stderr, "jpeg optimize option must be \"y\" or \"n\"\n");
-	return gFalse;
+	return false;
       }
     } else {
-      fprintf(stderr, "Unknown jpeg option \"%s\"\n", opt.getCString());
-      return gFalse;
+      fprintf(stderr, "Unknown jpeg option \"%s\"\n", opt.c_str());
+      return false;
     }
   }
-  return gTrue;
+  return true;
 }
 
 static void writePageImage(GooString *filename)
@@ -449,10 +449,10 @@ static void writePageImage(GooString *filename)
   if (filename->cmp("fd://0") == 0)
     file = stdout;
   else
-    file = fopen(filename->getCString(), "wb");
+    file = fopen(filename->c_str(), "wb");
 
   if (!file) {
-    fprintf(stderr, "Error opening output file %s\n", filename->getCString());
+    fprintf(stderr, "Error opening output file %s\n", filename->c_str());
     exit(2);
   }
 
@@ -463,7 +463,7 @@ static void writePageImage(GooString *filename)
   data = cairo_image_surface_get_data(surface);
 
   if (!writer->init(file, width, height, x_resolution, y_resolution)) {
-    fprintf(stderr, "Error writing %s\n", filename->getCString());
+    fprintf(stderr, "Error writing %s\n", filename->c_str());
     exit(2);
   }
   unsigned char *row = (unsigned char *) gmallocn(width, 4);
@@ -620,9 +620,9 @@ static void beginDocument(GooString *inputFileName, GooString *outputFileName, d
         output_file = stdout;
       else
       {
-        output_file = fopen(outputFileName->getCString(), "wb");
+        output_file = fopen(outputFileName->c_str(), "wb");
         if (!output_file) {
-          fprintf(stderr, "Error opening output file %s\n", outputFileName->getCString());
+          fprintf(stderr, "Error opening output file %s\n", outputFileName->c_str());
           exit(2);
         }
       }
@@ -681,9 +681,9 @@ static void beginPage(double *w, double *h)
 
 #ifdef CAIRO_HAS_WIN32_SURFACE
     if (printToWin32) {
-      GBool changePageSize = gTrue;
+      bool changePageSize = true;
       if (setupdlg && !origPageSizes)
-	changePageSize = gFalse;
+	changePageSize = false;
       win32BeginPage(w, h, changePageSize, noShrink); // w,h will be changed to actual size used
     }
 #endif
@@ -732,7 +732,7 @@ static void renderPage(PDFDoc *doc, CairoOutputDev *cairoOut, int pg,
 			72.0, 72.0,
 			0, /* rotate */
 			!useCropBox, /* useMediaBox */
-			gFalse, /* Crop */
+			false, /* Crop */
 			printing,
 			-1, -1, -1, -1);
   cairo_restore(cr);
@@ -795,7 +795,7 @@ static void endDocument()
   }
 }
 
-static GBool setPSPaperSize(char *size, int &psPaperWidth, int &psPaperHeight) {
+static bool setPSPaperSize(char *size, int &psPaperWidth, int &psPaperHeight) {
   if (!strcmp(size, "match")) {
     psPaperWidth = psPaperHeight = -1;
   } else if (!strcmp(size, "letter")) {
@@ -811,9 +811,9 @@ static GBool setPSPaperSize(char *size, int &psPaperWidth, int &psPaperHeight) {
     psPaperWidth = 842;
     psPaperHeight = 1190;
   } else {
-    return gFalse;
+    return false;
   }
-  return gTrue;
+  return true;
 }
 
 static GooString *getImageFileName(GooString *outputFileName, int numDigits, int page)
@@ -841,8 +841,6 @@ static GooString *getImageFileName(GooString *outputFileName, int numDigits, int
 static GooString *getOutputFileName(GooString *fileName, GooString *outputName)
 {
   GooString *name;
-  char *s;
-  char *p;
 
   if (outputName) {
     if (outputName->cmp("-") == 0) {
@@ -870,8 +868,8 @@ static GooString *getOutputFileName(GooString *fileName, GooString *outputName)
   }
 
   // strip everything up to last '/'
-  s = fileName->getCString();
-  p = strrchr(s, '/');
+  const char *s = fileName->c_str();
+  const char *p = strrchr(s, '/');
   if (p) {
     p++;
     if (*p == 0) {
@@ -884,9 +882,9 @@ static GooString *getOutputFileName(GooString *fileName, GooString *outputName)
   }
 
   // remove .pdf extension
-  p = strrchr(name->getCString(), '.');
+  p = strrchr(name->c_str(), '.');
   if (p && strcasecmp(p, ".pdf") == 0) {
-    GooString *name2 = new GooString(name->getCString(), name->getLength() - 4);
+    GooString *name2 = new GooString(name->c_str(), name->getLength() - 4);
     delete name;
     name = name2;
   }
@@ -904,7 +902,7 @@ static GooString *getOutputFileName(GooString *fileName, GooString *outputName)
   return name;
 }
 
-static void checkInvalidPrintOption(GBool option, const char *option_name)
+static void checkInvalidPrintOption(bool option, const char *option_name)
 {
   if (option) {
     fprintf(stderr, "Error: %s may only be used with the -png, -jpeg, or -tiff output options.\n", option_name);
@@ -912,7 +910,7 @@ static void checkInvalidPrintOption(GBool option, const char *option_name)
   }
 }
 
-static void checkInvalidImageOption(GBool option, const char *option_name)
+static void checkInvalidImageOption(bool option, const char *option_name)
 {
   if (option) {
     fprintf(stderr, "Error: %s may only be used with the -ps, -eps, -pdf, or -svg output options.\n", option_name);
@@ -976,15 +974,15 @@ int main(int argc, char *argv[]) {
     exit(99);
   }
   if (png || jpeg || tiff)
-    printing = gFalse;
+    printing = false;
   else
-    printing = gTrue;
+    printing = true;
 
   if (printing) {
     checkInvalidPrintOption(mono, "-mono");
     checkInvalidPrintOption(gray, "-gray");
     checkInvalidPrintOption(transp, "-transp");
-    checkInvalidPrintOption(icc.getCString()[0], "-icc");
+    checkInvalidPrintOption(icc.c_str()[0], "-icc");
     checkInvalidPrintOption(singleFile, "-singlefile");
     checkInvalidPrintOption(useCropBox, "-cropbox");
     checkInvalidPrintOption(scaleTo != 0, "-scale-to");
@@ -1007,7 +1005,7 @@ int main(int argc, char *argv[]) {
   if (printing)
     useCropBox = !noCrop;
 
-  if (icc.getCString()[0] && !png) {
+  if (icc.c_str()[0] && !png) {
     fprintf(stderr, "Error: -icc may only be used with png output.\n");
     exit(99);
   }
@@ -1051,7 +1049,7 @@ int main(int argc, char *argv[]) {
     exit(99);
   }
   if (!level2 && !level3)
-    level3 = gTrue;
+    level3 = true;
 
   if (eps && (origPageSizes || paperSize[0] || paperWidth > 0 || paperHeight > 0)) {
     fprintf(stderr, "Error: page size options may not be used with eps output.\n");
@@ -1074,12 +1072,12 @@ int main(int argc, char *argv[]) {
     }
   }
   if (origPageSizes || paperWidth < 0 || paperHeight < 0)
-    usePDFPageSize = gTrue;
+    usePDFPageSize = true;
   else
-    usePDFPageSize = gFalse;
+    usePDFPageSize = false;
 
   if (printdlg)
-    printToWin32 = gTrue;
+    printToWin32 = true;
 
   globalParams = new GlobalParams();
   if (quiet) {
@@ -1112,10 +1110,10 @@ int main(int argc, char *argv[]) {
 
 #ifdef USE_CMS
   icc_data = nullptr;
-  if (icc.getCString()[0]) {
-    FILE *file = fopen(icc.getCString(), "rb");
+  if (icc.c_str()[0]) {
+    FILE *file = fopen(icc.c_str(), "rb");
     if (!file) {
-      fprintf(stderr, "Error: unable to open icc profile %s\n", icc.getCString());
+      fprintf(stderr, "Error: unable to open icc profile %s\n", icc.c_str());
       exit(4);
     }
     fseek (file, 0, SEEK_END);
@@ -1123,7 +1121,7 @@ int main(int argc, char *argv[]) {
     fseek (file, 0, SEEK_SET);
     icc_data = (unsigned char*)gmalloc(icc_data_size);
     if (fread(icc_data, icc_data_size, 1, file) != 1) {
-      fprintf(stderr, "Error: unable to read icc profile %s\n", icc.getCString());
+      fprintf(stderr, "Error: unable to read icc profile %s\n", icc.c_str());
       exit(4);
     }
     fclose(file);
@@ -1182,9 +1180,9 @@ int main(int argc, char *argv[]) {
 
 #ifdef CAIRO_HAS_WIN32_SURFACE
     if (printdlg) {
-      GBool allPages = gFalse;
+      bool allPages = false;
       if (firstPage == 1 && lastPage == doc->getNumPages())
-	allPages = gTrue;
+	allPages = true;
       win32ShowPrintDialog(&expand, &noShrink, &noCenter,
 			   &usePDFPageSize, &allPages,
 			   &firstPage, &lastPage, doc->getNumPages());
@@ -1283,10 +1281,6 @@ int main(int argc, char *argv[]) {
   if (icc_data)
     gfree(icc_data);
 #endif
-
-  // check for memory leaks
-  Object::memCheck(stderr);
-  gMemReport(stderr);
 
   return 0;
 }

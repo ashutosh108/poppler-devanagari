@@ -26,6 +26,7 @@
 // Copyright (C) 2017, 2018 Oliver Sander <oliver.sander@tu-dresden.de>
 // Copyright (C) 2017 Adrian Johnson <ajohnson@redneon.com>
 // Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -33,10 +34,6 @@
 //========================================================================
 
 #include <config.h>
-
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
 
 #include <string.h>
 #include <math.h>
@@ -80,7 +77,7 @@ public:
 
   ~SplashOutFontFileID() {}
 
-  GBool matches(SplashFontFileID *id) override {
+  bool matches(SplashFontFileID *id) override {
     return ((SplashOutFontFileID *)id)->r.num == r.num &&
            ((SplashOutFontFileID *)id)->r.gen == r.gen;
   }
@@ -149,13 +146,15 @@ const QPicture& ArthurType3Font::getGlyph(int gid) const
     Dict* resDict = m_font->getResources();
 
     QPainter glyphPainter;
-    glyphs[gid] = std::unique_ptr<QPicture>(new QPicture);
+    glyphs[gid] = std::make_unique<QPicture>();
     glyphPainter.begin(glyphs[gid].get());
-    std::unique_ptr<ArthurOutputDev> output_dev(new ArthurOutputDev(&glyphPainter));
+    auto output_dev = std::make_unique<ArthurOutputDev>(&glyphPainter);
 
-    std::unique_ptr<Gfx> gfx(new Gfx(m_doc, output_dev.get(), resDict,
-                                     &box,  // pagebox
-                                     nullptr));  // cropBox
+    auto gfx = std::make_unique<Gfx>(
+	  m_doc, output_dev.get(), resDict,
+	  &box,  // pagebox
+	  nullptr  // cropBox
+    );
 
     output_dev->startDoc(m_doc);
 
@@ -245,11 +244,11 @@ void ArthurOutputDev::restoreState(GfxState *state)
 void ArthurOutputDev::updateAll(GfxState *state)
 {
   OutputDev::updateAll(state);
-  m_needFontUpdate = gTrue;
+  m_needFontUpdate = true;
 }
 
 // Set CTM (Current Transformation Matrix) to a fixed matrix
-void ArthurOutputDev::setDefaultCTM(double *ctm)
+void ArthurOutputDev::setDefaultCTM(const double *ctm)
 {
   m_painter.top()->setTransform(QTransform(ctm[0], ctm[1], ctm[2], ctm[3], ctm[4], ctm[5]));
 }
@@ -504,13 +503,13 @@ void ArthurOutputDev::updateFont(GfxState *state)
         break;
       }
       case gfxFontLocExternal:{ // font is in an external font file
-        QString fontFile(fontLoc->path->getCString());
+        QString fontFile(fontLoc->path->c_str());
         m_rawFont = new QRawFont(fontFile, fontSize);
         m_rawFontCache.insert(std::make_pair(fontID,std::unique_ptr<QRawFont>(m_rawFont)));
         break;
       }
       case gfxFontLocResident:{ // font resides in a PS printer
-        qDebug() << "Font Resident Encoding:" << fontLoc->encoding->getCString() << ", not implemented yet!";
+        qDebug() << "Font Resident Encoding:" << fontLoc->encoding->c_str() << ", not implemented yet!";
 
       break;
       }
@@ -572,7 +571,7 @@ void ArthurOutputDev::updateFont(GfxState *state)
     std::unique_ptr<GfxFontLoc> fontLoc(gfxFont->locateFont(xref, nullptr));
     if (!fontLoc) {
       error(errSyntaxError, -1, "Couldn't find a font for '{0:s}'",
-	    gfxFont->getName() ? gfxFont->getName()->getCString()
+	    gfxFont->getName() ? gfxFont->getName()->c_str()
 	                       : "(unnamed)");
       goto err2;
     }
@@ -592,9 +591,9 @@ void ArthurOutputDev::updateFont(GfxState *state)
 
     fontsrc = new SplashFontSrc;
     if (fileName)
-      fontsrc->setFile(fileName, gFalse);
+      fontsrc->setFile(fileName, false);
     else
-      fontsrc->setBuf(tmpBuf, tmpBufLen, gTrue);
+      fontsrc->setBuf(tmpBuf, tmpBufLen, true);
     
     // load the font file
     switch (fontType) {
@@ -604,7 +603,7 @@ void ArthurOutputDev::updateFont(GfxState *state)
 			   fontsrc,
 			   (const char **)((Gfx8BitFont *)gfxFont)->getEncoding()))) {
 	error(errSyntaxError, -1, "Couldn't create a font for '{0:s}'",
-	      gfxFont->getName() ? gfxFont->getName()->getCString()
+	      gfxFont->getName() ? gfxFont->getName()->c_str()
 	                         : "(unnamed)");
 	goto err2;
       }
@@ -615,7 +614,7 @@ void ArthurOutputDev::updateFont(GfxState *state)
 			   fontsrc,
 			   (const char **)((Gfx8BitFont *)gfxFont)->getEncoding()))) {
 	error(errSyntaxError, -1, "Couldn't create a font for '{0:s}'",
-	      gfxFont->getName() ? gfxFont->getName()->getCString()
+	      gfxFont->getName() ? gfxFont->getName()->c_str()
 	                         : "(unnamed)");
 	goto err2;
       }
@@ -626,7 +625,7 @@ void ArthurOutputDev::updateFont(GfxState *state)
 			   fontsrc,
 			   (const char **)((Gfx8BitFont *)gfxFont)->getEncoding()))) {
 	error(errSyntaxError, -1, "Couldn't create a font for '{0:s}'",
-	      gfxFont->getName() ? gfxFont->getName()->getCString()
+	      gfxFont->getName() ? gfxFont->getName()->c_str()
 	                         : "(unnamed)");
 	goto err2;
       }
@@ -634,7 +633,7 @@ void ArthurOutputDev::updateFont(GfxState *state)
     case fontTrueType:
     case fontTrueTypeOT:
 	if (fileName)
-	 ff = FoFiTrueType::load(fileName->getCString());
+	 ff = FoFiTrueType::load(fileName->c_str());
 	else
 	ff = FoFiTrueType::make(tmpBuf, tmpBufLen);
       if (ff) {
@@ -650,7 +649,7 @@ void ArthurOutputDev::updateFont(GfxState *state)
 			   fontsrc,
 			   codeToGID, n))) {
 	error(errSyntaxError, -1, "Couldn't create a font for '{0:s}'",
-	      gfxFont->getName() ? gfxFont->getName()->getCString()
+	      gfxFont->getName() ? gfxFont->getName()->c_str()
 	                         : "(unnamed)");
 	goto err2;
       }
@@ -661,7 +660,7 @@ void ArthurOutputDev::updateFont(GfxState *state)
 			   id,
 			   fontsrc))) {
 	error(errSyntaxError, -1, "Couldn't create a font for '{0:s}'",
-	      gfxFont->getName() ? gfxFont->getName()->getCString()
+	      gfxFont->getName() ? gfxFont->getName()->c_str()
 	                         : "(unnamed)");
 	goto err2;
       }
@@ -681,7 +680,7 @@ void ArthurOutputDev::updateFont(GfxState *state)
 			   fontsrc,
 			   codeToGID, n))) {
 	error(errSyntaxError, -1, "Couldn't create a font for '{0:s}'",
-	      gfxFont->getName() ? gfxFont->getName()->getCString()
+	      gfxFont->getName() ? gfxFont->getName()->c_str()
 	                         : "(unnamed)");
 	goto err2;
       }
@@ -695,11 +694,11 @@ void ArthurOutputDev::updateFont(GfxState *state)
 	if (n) {
 	  codeToGID = (int *)gmallocn(n, sizeof(int));
 	  memcpy(codeToGID, ((GfxCIDFont *)gfxFont)->getCIDToGID(),
-		  n * sizeof(Gushort));
+		  n * sizeof(unsigned short));
 	}
       } else {
 	if (fileName)
-	  ff = FoFiTrueType::load(fileName->getCString());
+	  ff = FoFiTrueType::load(fileName->c_str());
 	else
 	  ff = FoFiTrueType::make(tmpBuf, tmpBufLen);
 	if (! ff)
@@ -712,7 +711,7 @@ void ArthurOutputDev::updateFont(GfxState *state)
 			   fontsrc,
 			   codeToGID, n, faceIndex))) {
 	error(errSyntaxError, -1, "Couldn't create a font for '{0:s}'",
-	      gfxFont->getName() ? gfxFont->getName()->getCString()
+	      gfxFont->getName() ? gfxFont->getName()->c_str()
 	                         : "(unnamed)");
 	goto err2;
       }
@@ -788,7 +787,7 @@ void ArthurOutputDev::eoFill(GfxState *state)
   m_painter.top()->fillPath( convertPath( state, state->getPath(), Qt::OddEvenFill ), m_currentBrush );
 }
 
-GBool ArthurOutputDev::axialShadedFill(GfxState *state, GfxAxialShading *shading, double tMin, double tMax)
+bool ArthurOutputDev::axialShadedFill(GfxState *state, GfxAxialShading *shading, double tMin, double tMax)
 {
   double x0, y0, x1, y1;
   shading->getCoords(&x0, &y0, &x1, &y1);
@@ -911,7 +910,7 @@ GBool ArthurOutputDev::axialShadedFill(GfxState *state, GfxAxialShading *shading
   state->clearPath();
 
   // True means: The shaded region has been painted
-  return gTrue;
+  return true;
 }
 
 void ArthurOutputDev::clip(GfxState *state)
@@ -1056,12 +1055,14 @@ void ArthurOutputDev::endTextObject(GfxState *state)
 
 
 void ArthurOutputDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
-				    int width, int height, GBool invert,
-				    GBool interpolate, GBool inlineImg)
+				    int width, int height, bool invert,
+				    bool interpolate, bool inlineImg)
 {
-  std::unique_ptr<ImageStream> imgStr(new ImageStream(str, width,
-                                                      1,    // numPixelComps
-                                                      1));  // getBits
+  auto imgStr = std::make_unique<ImageStream>(
+	str, width,
+	1,  // numPixelComps
+	1  // getBits
+  );
   imgStr->reset();
 
   // TODO: Would using QImage::Format_Mono be more efficient here?
@@ -1073,7 +1074,7 @@ void ArthurOutputDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
 
   for (int y = 0; y < height; y++) {
 
-    Guchar *pix = imgStr->getLine();
+    unsigned char *pix = imgStr->getLine();
 
     // Invert the vertical coordinate: y is increasing from top to bottom
     // on the page, but y is increasing bottom to top in the picture.
@@ -1097,21 +1098,22 @@ void ArthurOutputDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
 void ArthurOutputDev::drawImage(GfxState *state, Object *ref, Stream *str,
 				int width, int height,
 				GfxImageColorMap *colorMap,
-				GBool interpolate, int *maskColors, GBool inlineImg)
+				bool interpolate, int *maskColors, bool inlineImg)
 {
   unsigned int *data;
   unsigned int *line;
   int x, y;
-  ImageStream *imgStr;
-  Guchar *pix;
+  unsigned char *pix;
   int i;
   QImage image;
   int stride;
   
   /* TODO: Do we want to cache these? */
-  imgStr = new ImageStream(str, width,
-			   colorMap->getNumPixelComps(),
-			   colorMap->getBits());
+  auto imgStr = std::make_unique<ImageStream>(
+	str, width,
+	colorMap->getNumPixelComps(),
+	colorMap->getBits()
+  );
   imgStr->reset();
   
   image = QImage(width, height, QImage::Format_ARGB32);
@@ -1144,25 +1146,24 @@ void ArthurOutputDev::drawImage(GfxState *state, Object *ref, Stream *str,
   // At this point, the QPainter coordinate transformation (CTM) is such
   // that QRect(0,0,1,1) is exactly the area of the image.
   m_painter.top()->drawImage( QRect(0,0,1,1), image );
-  delete imgStr;
 
 }
 
 void ArthurOutputDev::drawSoftMaskedImage(GfxState *state, Object *ref, Stream *str,
                                           int width, int height,
                                           GfxImageColorMap *colorMap,
-                                          GBool interpolate,
+                                          bool interpolate,
                                           Stream *maskStr,
                                           int maskWidth, int maskHeight,
                                           GfxImageColorMap *maskColorMap,
-                                          GBool maskInterpolate)
+                                          bool maskInterpolate)
 {
   // Bail out if the image size doesn't match the mask size.  I don't know
   // what to do in this case.
   if (width!=maskWidth || height!=maskHeight)
   {
     qDebug() << "Soft mask size does not match image size!";
-    drawImage(state, ref, str, width, height, colorMap, interpolate, nullptr, gFalse);
+    drawImage(state, ref, str, width, height, colorMap, interpolate, nullptr, false);
     return;
   }
 
@@ -1171,31 +1172,35 @@ void ArthurOutputDev::drawSoftMaskedImage(GfxState *state, Object *ref, Stream *
   if (maskColorMap->getColorSpace()->getNComps() != 1)
   {
     qDebug() << "Soft mask is not a single 8-bit channel!";
-    drawImage(state, ref, str, width, height, colorMap, interpolate, nullptr, gFalse);
+    drawImage(state, ref, str, width, height, colorMap, interpolate, nullptr, false);
     return;
   }
 
   /* TODO: Do we want to cache these? */
-  std::unique_ptr<ImageStream> imgStr(new ImageStream(str, width,
-                                                      colorMap->getNumPixelComps(),
-                                                      colorMap->getBits()));
+  auto imgStr = std::make_unique<ImageStream>(
+	str, width,
+	colorMap->getNumPixelComps(),
+	colorMap->getBits()
+  );
   imgStr->reset();
 
-  std::unique_ptr<ImageStream> maskImageStr(new ImageStream(maskStr, maskWidth,
-                                                            maskColorMap->getNumPixelComps(),
-                                                            maskColorMap->getBits()));
+  auto maskImageStr = std::make_unique<ImageStream>(
+	maskStr, maskWidth,
+	maskColorMap->getNumPixelComps(),
+	maskColorMap->getBits()
+  );
   maskImageStr->reset();
 
   QImage image(width, height, QImage::Format_ARGB32);
   unsigned int *data = (unsigned int *)image.bits();
   int stride = image.bytesPerLine()/4;
 
-  std::vector<Guchar> maskLine(maskWidth);
+  std::vector<unsigned char> maskLine(maskWidth);
 
   for (int y = 0; y < height; y++) {
 
-    Guchar *pix = imgStr->getLine();
-    Guchar *maskPix = maskImageStr->getLine();
+    unsigned char *pix = imgStr->getLine();
+    unsigned char *maskPix = maskImageStr->getLine();
 
     // Invert the vertical coordinate: y is increasing from top to bottom
     // on the page, but y is increasing bottom to top in the picture.
@@ -1216,10 +1221,10 @@ void ArthurOutputDev::drawSoftMaskedImage(GfxState *state, Object *ref, Stream *
   m_painter.top()->drawImage( QRect(0,0,1,1), image );
 }
 
-void ArthurOutputDev::beginTransparencyGroup(GfxState * /*state*/, double * /*bbox*/,
+void ArthurOutputDev::beginTransparencyGroup(GfxState * /*state*/, const double * /*bbox*/,
                                              GfxColorSpace * /*blendingColorSpace*/,
-                                             GBool /*isolated*/, GBool /*knockout*/,
-                                             GBool /*forSoftMask*/)
+                                             bool /*isolated*/, bool /*knockout*/,
+                                             bool /*forSoftMask*/)
 {
   // The entire transparency group will be painted into a
   // freshly created QPicture object.  Since an existing painter
@@ -1249,7 +1254,7 @@ void ArthurOutputDev::endTransparencyGroup(GfxState * /*state*/)
   m_qpictures.pop();
 }
 
-void ArthurOutputDev::paintTransparencyGroup(GfxState * /*state*/, double * /*bbox*/)
+void ArthurOutputDev::paintTransparencyGroup(GfxState * /*state*/, const double * /*bbox*/)
 {
   // Actually draw the transparency group
   m_painter.top()->drawPicture(0,0,*m_lastTransparencyGroupPicture);

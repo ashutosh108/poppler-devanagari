@@ -22,10 +22,6 @@
 #ifndef SPLASHXPATH_H
 #define SPLASHXPATH_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
 #include "SplashTypes.h"
 
 class SplashPath;
@@ -44,7 +40,7 @@ struct SplashXPathSeg {
   SplashCoord x1, y1;		// second endpoint
   SplashCoord dxdy;		// slope: delta-x / delta-y
   SplashCoord dydx;		// slope: delta-y / delta-x
-  Guint flags;
+  unsigned int flags;
 };
 
 #define splashXPathHoriz   0x01 // segment is vertical (y0 == y1)
@@ -65,8 +61,8 @@ public:
   // space, via <matrix>.  If <closeSubpaths> is true, closes all open
   // subpaths.
   SplashXPath(SplashPath *path, SplashCoord *matrix,
-	      SplashCoord flatness, GBool closeSubpaths,
-	      GBool adjustLines = gFalse, int linePosI = 0);
+	      SplashCoord flatness, bool closeSubpaths,
+	      bool adjustLines = false, int linePosI = 0);
 
   // Copy an expanded path.
   SplashXPath *copy() { return new SplashXPath(this); }
@@ -96,7 +92,7 @@ protected:
 		SplashCoord x2, SplashCoord y2,
 		SplashCoord x3, SplashCoord y3,
 		SplashCoord flatness,
-		GBool first, GBool last, GBool end0, GBool end1);
+		bool first, bool last, bool end0, bool end1);
   void addSegment(SplashCoord x0, SplashCoord y0,
 		  SplashCoord x1, SplashCoord y1);
 

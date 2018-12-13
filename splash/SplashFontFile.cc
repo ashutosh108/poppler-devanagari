@@ -21,10 +21,6 @@
 
 #include <config.h>
 
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #include <stdio.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -49,7 +45,7 @@ SplashFontFile::SplashFontFile(SplashFontFileID *idA, SplashFontSrc *srcA) {
   src = srcA;
   src->ref();
   refCnt = 0;
-  doAdjustMatrix = gFalse;
+  doAdjustMatrix = false;
 }
 
 SplashFontFile::~SplashFontFile() {
@@ -70,8 +66,8 @@ void SplashFontFile::decRefCnt() {
 //
 
 SplashFontSrc::SplashFontSrc() {
-  isFile = gFalse;
-  deleteSrc = gFalse;
+  isFile = false;
+  deleteSrc = false;
   fileName = nullptr;
   buf = nullptr;
   refcnt = 1;
@@ -81,7 +77,7 @@ SplashFontSrc::~SplashFontSrc() {
   if (deleteSrc) {
     if (isFile) {
       if (fileName)
-	unlink(fileName->getCString());
+	unlink(fileName->c_str());
     } else {
       if (buf)
 	gfree(buf);
@@ -101,23 +97,23 @@ void SplashFontSrc::unref() {
     delete this;
 }
 
-void SplashFontSrc::setFile(GooString *file, GBool del)
+void SplashFontSrc::setFile(GooString *file, bool del)
 {
-  isFile = gTrue;
+  isFile = true;
   fileName = file->copy();
   deleteSrc = del;
 }
 
-void SplashFontSrc::setFile(const char *file, GBool del)
+void SplashFontSrc::setFile(const char *file, bool del)
 {
-  isFile = gTrue;
+  isFile = true;
   fileName = new GooString(file);
   deleteSrc = del;
 }
 
-void SplashFontSrc::setBuf(char *bufA, int bufLenA, GBool del)
+void SplashFontSrc::setBuf(char *bufA, int bufLenA, bool del)
 {
-  isFile = gFalse;
+  isFile = false;
   buf = bufA;
   bufLen = bufLenA;
   deleteSrc = del;

@@ -31,6 +31,7 @@ set(poppler_glib_public_headers
   poppler-form-field.h
   poppler-annot.h
   poppler-layer.h
+  poppler-macros.h
   poppler-movie.h
   poppler-media.h
   poppler.h
@@ -85,7 +86,10 @@ set(poppler_glib_generated_SRCS
   ${CMAKE_SOURCE_DIR}/poppler/CairoRescaleBox.cc
 )
 add_library(poppler-glib ${poppler_glib_SRCS} ${poppler_glib_generated_SRCS})
-set_target_properties(poppler-glib PROPERTIES VERSION 8.9.0 SOVERSION 8)
+set_target_properties(poppler-glib PROPERTIES VERSION 8.11.0 SOVERSION 8)
+set_target_properties(poppler-glib PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(poppler-glib PROPERTIES CXX_VISIBILITY_PRESET hidden)
+set_target_properties(poppler-glib PROPERTIES VISIBILITY_INLINES_HIDDEN 1)
 if(MINGW)
     get_target_property(POPPLER_GLIB_SOVERSION poppler-glib SOVERSION)
     set_target_properties(poppler-glib PROPERTIES SUFFIX "-${POPPLER_GLIB_SOVERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")

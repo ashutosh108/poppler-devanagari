@@ -10,12 +10,9 @@
 // Copyright 2015 Dmytro Morgun <lztoad@gmail.com>
 // Copyright 2018 Adrian Johnson <ajohnson@redneon.com>
 // Copyright 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+// Copyright 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 //========================================================================
-
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
 
 #include "StructElement.h"
 #include "StructTreeRoot.h"
@@ -29,7 +26,7 @@
 class GfxState;
 
 
-static GBool isPlacementName(Object *value)
+static bool isPlacementName(Object *value)
 {
   return value->isName("Block")
       || value->isName("Inline")
@@ -38,14 +35,14 @@ static GBool isPlacementName(Object *value)
       || value->isName("End");
 }
 
-static GBool isWritingModeName(Object *value)
+static bool isWritingModeName(Object *value)
 {
   return value->isName("LrTb")
       || value->isName("RlTb")
       || value->isName("TbRl");
 }
 
-static GBool isBorderStyleName(Object *value)
+static bool isBorderStyleName(Object *value)
 {
   return value->isName("None")
       || value->isName("Hidden")
@@ -59,7 +56,7 @@ static GBool isBorderStyleName(Object *value)
       || value->isName("Outset");
 }
 
-static GBool isTextAlignName(Object *value)
+static bool isTextAlignName(Object *value)
 {
   return value->isName("Start")
       || value->isName("End")
@@ -67,7 +64,7 @@ static GBool isTextAlignName(Object *value)
       || value->isName("Justify");
 }
 
-static GBool isBlockAlignName(Object *value)
+static bool isBlockAlignName(Object *value)
 {
   return value->isName("Before")
       || value->isName("Middle")
@@ -75,26 +72,26 @@ static GBool isBlockAlignName(Object *value)
       || value->isName("Justify");
 }
 
-static GBool isInlineAlignName(Object *value)
+static bool isInlineAlignName(Object *value)
 {
   return value->isName("Start")
       || value->isName("End")
       || value->isName("Center");
 }
 
-static GBool isNumber(Object *value)
+static bool isNumber(Object *value)
 {
   return value->isNum();
 }
 
-static GBool isLineHeight(Object *value)
+static bool isLineHeight(Object *value)
 {
   return value->isName("Normal")
       || value->isName("Auto")
       || isNumber(value);
 }
 
-static GBool isTextDecorationName(Object *value)
+static bool isTextDecorationName(Object *value)
 {
   return value->isName("None")
       || value->isName("Underline")
@@ -102,7 +99,7 @@ static GBool isTextDecorationName(Object *value)
       || value->isName("LineThrough");
 }
 
-static GBool isRubyAlignName(Object *value)
+static bool isRubyAlignName(Object *value)
 {
   return value->isName("Start")
       || value->isName("End")
@@ -111,7 +108,7 @@ static GBool isRubyAlignName(Object *value)
       || value->isName("Distribute");
 }
 
-static GBool isRubyPositionName(Object *value)
+static bool isRubyPositionName(Object *value)
 {
   return value->isName("Before")
       || value->isName("After")
@@ -119,7 +116,7 @@ static GBool isRubyPositionName(Object *value)
       || value->isName("Inline");
 }
 
-static GBool isGlyphOrientationName(Object *value)
+static bool isGlyphOrientationName(Object *value)
 {
   return value->isName("Auto")
       || value->isName("90")
@@ -130,7 +127,7 @@ static GBool isGlyphOrientationName(Object *value)
       || value->isName("-180");
 }
 
-static GBool isListNumberingName(Object *value)
+static bool isListNumberingName(Object *value)
 {
   return value->isName("None")
       || value->isName("Disc")
@@ -143,7 +140,7 @@ static GBool isListNumberingName(Object *value)
       || value->isName("LowerAlpha");
 }
 
-static GBool isFieldRoleName(Object *value)
+static bool isFieldRoleName(Object *value)
 {
   return value->isName("rb")
       || value->isName("cb")
@@ -151,34 +148,34 @@ static GBool isFieldRoleName(Object *value)
       || value->isName("tv");
 }
 
-static GBool isFieldCheckedName(Object *value)
+static bool isFieldCheckedName(Object *value)
 {
   return value->isName("on")
       || value->isName("off")
       || value->isName("neutral");
 }
 
-static GBool isTableScopeName(Object *value)
+static bool isTableScopeName(Object *value)
 {
   return value->isName("Row")
       || value->isName("Column")
       || value->isName("Both");
 }
 
-static GBool isRGBColor(Object *value)
+static bool isRGBColor(Object *value)
 {
   if (!(value->isArray() && value->arrayGetLength() == 3))
-    return gFalse;
+    return false;
 
-  GBool okay = gTrue;
+  bool okay = true;
   for (int i = 0; i < 3; i++) {
     Object obj = value->arrayGet(i);
     if (!obj.isNum()) {
-      okay = gFalse;
+      okay = false;
       break;
     }
     if (obj.getNum() < 0.0 || obj.getNum() > 1.0) {
-      okay = gFalse;
+      okay = false;
       break;
     }
   }
@@ -186,23 +183,23 @@ static GBool isRGBColor(Object *value)
   return okay;
 }
 
-static GBool isNatural(Object *value)
+static bool isNatural(Object *value)
 {
   return (value->isInt()   && value->getInt()   > 0)
       || (value->isInt64() && value->getInt64() > 0);
 }
 
-static GBool isPositive(Object *value)
+static bool isPositive(Object *value)
 {
   return value->isNum() && value->getNum() >= 0.0;
 }
 
-static GBool isNumberOrAuto(Object *value)
+static bool isNumberOrAuto(Object *value)
 {
   return isNumber(value) || value->isName("Auto");
 }
 
-static GBool isTextString(Object *value)
+static bool isTextString(Object *value)
 {
   // XXX: Shall isName() also be checked?
   return value->isString();
@@ -210,42 +207,42 @@ static GBool isTextString(Object *value)
 
 
 #define ARRAY_CHECKER(name, checkItem, length, allowSingle, allowNulls) \
-    static GBool name(Object *value) {                                  \
+    static bool name(Object *value) {                                  \
       if (!value->isArray())                                            \
-        return allowSingle ? checkItem(value) : gFalse;                 \
+        return allowSingle ? checkItem(value) : false;                 \
                                                                         \
       if (length && value->arrayGetLength() != length)                  \
-        return gFalse;                                                  \
+        return false;                                                  \
                                                                         \
-      GBool okay = gTrue;                                               \
+      bool okay = true;                                               \
       for (int i = 0; i < value->arrayGetLength(); i++) {               \
         Object obj = value->arrayGet(i);                                \
         if ((!allowNulls && obj.isNull()) || !checkItem(&obj)) {        \
-          okay = gFalse;                                                \
+          okay = false;                                                \
           break;                                                        \
         }                                                               \
       }                                                                 \
       return okay;                                                      \
     }
 
-ARRAY_CHECKER(isRGBColorOrOptionalArray4, isRGBColor,        4, gTrue,  gTrue )
-ARRAY_CHECKER(isPositiveOrOptionalArray4, isPositive,        4, gTrue,  gTrue )
-ARRAY_CHECKER(isPositiveOrArray4,         isPositive,        4, gTrue,  gFalse)
-ARRAY_CHECKER(isBorderStyle,              isBorderStyleName, 4, gTrue,  gTrue )
-ARRAY_CHECKER(isNumberArray4,             isNumber,          4, gFalse, gFalse)
-ARRAY_CHECKER(isNumberOrArrayN,           isNumber,          0, gTrue,  gFalse)
-ARRAY_CHECKER(isTableHeaders,             isTextString,      0, gFalse, gFalse)
+ARRAY_CHECKER(isRGBColorOrOptionalArray4, isRGBColor,        4, true,  true )
+ARRAY_CHECKER(isPositiveOrOptionalArray4, isPositive,        4, true,  true )
+ARRAY_CHECKER(isPositiveOrArray4,         isPositive,        4, true,  false)
+ARRAY_CHECKER(isBorderStyle,              isBorderStyleName, 4, true,  true )
+ARRAY_CHECKER(isNumberArray4,             isNumber,          4, false, false)
+ARRAY_CHECKER(isNumberOrArrayN,           isNumber,          0, true,  false)
+ARRAY_CHECKER(isTableHeaders,             isTextString,      0, false, false)
 
 
 // Type of functions used to do type-checking on attribute values
-typedef GBool (*AttributeCheckFunc)(Object*);
+typedef bool (*AttributeCheckFunc)(Object*);
 
 // Maps attributes to their names and whether the attribute can be inherited.
 struct AttributeMapEntry {
   Attribute::Type    type;
   const char        *name;
   const Object      *defval;
-  GBool              inherit;
+  bool              inherit;
   AttributeCheckFunc check;
 };
 
@@ -269,7 +266,7 @@ static const AttributeDefaults attributeDefaults;
 
 
 #define ATTR_LIST_END \
-  { Attribute::Unknown, nullptr, nullptr, gFalse, nullptr }
+  { Attribute::Unknown, nullptr, nullptr, false, nullptr }
 
 #define ATTR_WITH_DEFAULT(name, inherit, check, defval) \
   { Attribute::name,           \
@@ -287,86 +284,86 @@ static const AttributeDefaults attributeDefaults;
 
 static const AttributeMapEntry attributeMapCommonShared[] =
 {
-  ATTR_WITH_DEFAULT(Placement,       gFalse, isPlacementName, Inline),
-  ATTR_WITH_DEFAULT(WritingMode,     gTrue,  isWritingModeName, LrTb),
-  ATTR             (BackgroundColor, gFalse, isRGBColor),
-  ATTR             (BorderColor,     gTrue,  isRGBColorOrOptionalArray4),
-  ATTR_WITH_DEFAULT(BorderStyle,     gFalse, isBorderStyle, None),
-  ATTR             (BorderThickness, gTrue,  isPositiveOrOptionalArray4),
-  ATTR_WITH_DEFAULT(Padding,         gFalse, isPositiveOrArray4, Zero),
-  ATTR             (Color,           gTrue,  isRGBColor),
+  ATTR_WITH_DEFAULT(Placement,       false, isPlacementName, Inline),
+  ATTR_WITH_DEFAULT(WritingMode,     true,  isWritingModeName, LrTb),
+  ATTR             (BackgroundColor, false, isRGBColor),
+  ATTR             (BorderColor,     true,  isRGBColorOrOptionalArray4),
+  ATTR_WITH_DEFAULT(BorderStyle,     false, isBorderStyle, None),
+  ATTR             (BorderThickness, true,  isPositiveOrOptionalArray4),
+  ATTR_WITH_DEFAULT(Padding,         false, isPositiveOrArray4, Zero),
+  ATTR             (Color,           true,  isRGBColor),
   ATTR_LIST_END
 };
 
 static const AttributeMapEntry attributeMapCommonBlock[] =
 {
-  ATTR_WITH_DEFAULT(SpaceBefore, gFalse, isPositive, Zero),
-  ATTR_WITH_DEFAULT(SpaceAfter,  gFalse, isPositive, Zero),
-  ATTR_WITH_DEFAULT(StartIndent, gTrue,  isNumber,   Zero),
-  ATTR_WITH_DEFAULT(EndIndent,   gTrue,  isNumber,   Zero),
-  ATTR_WITH_DEFAULT(TextIndent,  gTrue,  isNumber,   Zero),
-  ATTR_WITH_DEFAULT(TextAlign,   gTrue,  isTextAlignName, Start),
-  ATTR             (BBox,        gFalse, isNumberArray4),
-  ATTR_WITH_DEFAULT(Width,       gFalse, isNumberOrAuto, Auto),
-  ATTR_WITH_DEFAULT(Height,      gFalse, isNumberOrAuto, Auto),
-  ATTR_WITH_DEFAULT(BlockAlign,  gTrue,  isBlockAlignName, Before),
-  ATTR_WITH_DEFAULT(InlineAlign, gTrue,  isInlineAlignName, Start),
+  ATTR_WITH_DEFAULT(SpaceBefore, false, isPositive, Zero),
+  ATTR_WITH_DEFAULT(SpaceAfter,  false, isPositive, Zero),
+  ATTR_WITH_DEFAULT(StartIndent, true,  isNumber,   Zero),
+  ATTR_WITH_DEFAULT(EndIndent,   true,  isNumber,   Zero),
+  ATTR_WITH_DEFAULT(TextIndent,  true,  isNumber,   Zero),
+  ATTR_WITH_DEFAULT(TextAlign,   true,  isTextAlignName, Start),
+  ATTR             (BBox,        false, isNumberArray4),
+  ATTR_WITH_DEFAULT(Width,       false, isNumberOrAuto, Auto),
+  ATTR_WITH_DEFAULT(Height,      false, isNumberOrAuto, Auto),
+  ATTR_WITH_DEFAULT(BlockAlign,  true,  isBlockAlignName, Before),
+  ATTR_WITH_DEFAULT(InlineAlign, true,  isInlineAlignName, Start),
   ATTR_LIST_END
 };
 
 static const AttributeMapEntry attributeMapCommonInline[] =
 {
-  ATTR_WITH_DEFAULT(BaselineShift,            gFalse, isNumber, Zero),
-  ATTR_WITH_DEFAULT(LineHeight,               gTrue,  isLineHeight, Normal),
-  ATTR             (TextDecorationColor,      gTrue,  isRGBColor),
-  ATTR             (TextDecorationThickness,  gTrue,  isPositive),
-  ATTR_WITH_DEFAULT(TextDecorationType,       gFalse, isTextDecorationName, None),
-  ATTR_WITH_DEFAULT(GlyphOrientationVertical, gTrue,  isGlyphOrientationName, Auto),
+  ATTR_WITH_DEFAULT(BaselineShift,            false, isNumber, Zero),
+  ATTR_WITH_DEFAULT(LineHeight,               true,  isLineHeight, Normal),
+  ATTR             (TextDecorationColor,      true,  isRGBColor),
+  ATTR             (TextDecorationThickness,  true,  isPositive),
+  ATTR_WITH_DEFAULT(TextDecorationType,       false, isTextDecorationName, None),
+  ATTR_WITH_DEFAULT(GlyphOrientationVertical, true,  isGlyphOrientationName, Auto),
   ATTR_LIST_END
 };
 
 static const AttributeMapEntry attributeMapCommonRubyText[] =
 {
-  ATTR_WITH_DEFAULT(RubyPosition, gTrue, isRubyPositionName, Before),
-  ATTR_WITH_DEFAULT(RubyAlign,    gTrue, isRubyAlignName, Distribute),
+  ATTR_WITH_DEFAULT(RubyPosition, true, isRubyPositionName, Before),
+  ATTR_WITH_DEFAULT(RubyAlign,    true, isRubyAlignName, Distribute),
   ATTR_LIST_END
 };
 
 static const AttributeMapEntry attributeMapCommonColumns[] =
 {
-  ATTR_WITH_DEFAULT(ColumnCount,  gFalse, isNatural, Nat1),
-  ATTR             (ColumnGap,    gFalse, isNumberOrArrayN),
-  ATTR             (ColumnWidths, gFalse, isNumberOrArrayN),
+  ATTR_WITH_DEFAULT(ColumnCount,  false, isNatural, Nat1),
+  ATTR             (ColumnGap,    false, isNumberOrArrayN),
+  ATTR             (ColumnWidths, false, isNumberOrArrayN),
   ATTR_LIST_END
 };
 
 static const AttributeMapEntry attributeMapCommonList[] = {
-  ATTR_WITH_DEFAULT(ListNumbering, gTrue, isListNumberingName, None),
+  ATTR_WITH_DEFAULT(ListNumbering, true, isListNumberingName, None),
   ATTR_LIST_END
 };
 
 static const AttributeMapEntry attributeMapCommonPrintField[] =
 {
-  ATTR             (Role,    gFalse, isFieldRoleName),
-  ATTR_WITH_DEFAULT(checked, gFalse, isFieldCheckedName, off),
-  ATTR             (Desc,    gFalse, isTextString),
+  ATTR             (Role,    false, isFieldRoleName),
+  ATTR_WITH_DEFAULT(checked, false, isFieldCheckedName, off),
+  ATTR             (Desc,    false, isTextString),
   ATTR_LIST_END
 };
 
 static const AttributeMapEntry attributeMapCommonTable[] =
 {
-  ATTR(Headers, gFalse, isTableHeaders),
-  ATTR(Scope,   gFalse, isTableScopeName),
-  ATTR(Summary, gFalse, isTextString),
+  ATTR(Headers, false, isTableHeaders),
+  ATTR(Scope,   false, isTableScopeName),
+  ATTR(Summary, false, isTextString),
   ATTR_LIST_END
 };
 
 static const AttributeMapEntry attributeMapCommonTableCell[] =
 {
-  ATTR_WITH_DEFAULT(RowSpan,      gFalse, isNatural, Nat1),
-  ATTR_WITH_DEFAULT(ColSpan,      gFalse, isNatural, Nat1),
-  ATTR_WITH_DEFAULT(TBorderStyle, gTrue,  isBorderStyle, None),
-  ATTR_WITH_DEFAULT(TPadding,     gTrue,  isPositiveOrArray4, Zero),
+  ATTR_WITH_DEFAULT(RowSpan,      false, isNatural, Nat1),
+  ATTR_WITH_DEFAULT(ColSpan,      false, isNatural, Nat1),
+  ATTR_WITH_DEFAULT(TBorderStyle, true,  isBorderStyle, None),
+  ATTR_WITH_DEFAULT(TPadding,     true,  isPositiveOrArray4, Zero),
   ATTR_LIST_END
 };
 
@@ -472,7 +469,7 @@ static const struct OwnerMapEntry {
 };
 
 
-static GBool ownerHasMorePriority(Attribute::Owner a, Attribute::Owner b)
+static bool ownerHasMorePriority(Attribute::Owner a, Attribute::Owner b)
 {
   unsigned aIndex, bIndex;
 
@@ -663,13 +660,13 @@ static StructElement::Type nameToType(const char *name)
 // Attribute
 //------------------------------------------------------------------------
 
-Attribute::Attribute(const char *nameA, int nameLenA, Object *valueA):
+Attribute::Attribute(GooString &&nameA, Object *valueA):
   type(UserProperty),
   owner(UserProperties),
   revision(0),
-  name(nameA, nameLenA),
+  name(std::move(nameA)),
   value(),
-  hidden(gFalse),
+  hidden(false),
   formatted(nullptr)
 {
   assert(valueA);
@@ -682,7 +679,7 @@ Attribute::Attribute(Type typeA, Object *valueA):
   revision(0),
   name(),
   value(),
-  hidden(gFalse),
+  hidden(false),
   formatted(nullptr)
 {
   assert(valueA);
@@ -701,7 +698,7 @@ Attribute::~Attribute()
 const char *Attribute::getTypeName() const
 {
   if (type == UserProperty)
-    return name.getCString();
+    return name.c_str();
 
   const AttributeMapEntry *entry = getAttributeMapEntry(attributeMapAll, type);
   if (entry)
@@ -734,26 +731,26 @@ void Attribute::setFormattedValue(const char *formattedA)
   }
 }
 
-GBool Attribute::checkType(StructElement *element)
+bool Attribute::checkType(StructElement *element)
 {
   // If an element is passed, tighther type-checking can be done.
   if (!element)
-    return gTrue;
+    return true;
 
   const TypeMapEntry *elementTypeEntry = getTypeMapEntry(element->getType());
   if (elementTypeEntry && elementTypeEntry->attributes) {
     const AttributeMapEntry *entry = getAttributeMapEntry(elementTypeEntry->attributes, type);
     if (entry) {
       if (entry->check && !((*entry->check)(&value))) {
-        return gFalse;
+        return false;
       }
     } else {
       // No entry: the attribute is not valid for the containing element.
-      return gFalse;
+      return false;
     }
   }
 
-  return gTrue;
+  return true;
 }
 
 Attribute::Type Attribute::getTypeForName(const char *name, StructElement *element)
@@ -773,16 +770,13 @@ Attribute::Type Attribute::getTypeForName(const char *name, StructElement *eleme
 Attribute *Attribute::parseUserProperty(Dict *property)
 {
   Object obj, value;
-  const char *name = nullptr;
-  int nameLen = GooString::CALC_STRING_LEN;
+  GooString name;
 
   obj = property->lookup("N");
   if (obj.isString()) {
-    const GooString *s = obj.getString();
-    name = s->getCString();
-    nameLen = s->getLength();
+    name.Set(obj.getString());
   } else if (obj.isName())
-    name = obj.getName();
+    name.Set(obj.getName());
   else {
     error(errSyntaxError, -1, "N object is wrong type ({0:s})", obj.getTypeName());
     return nullptr;
@@ -794,10 +788,10 @@ Attribute *Attribute::parseUserProperty(Dict *property)
     return nullptr;
   }
 
-  Attribute *attribute = new Attribute(name, nameLen, &value);
+  Attribute *attribute = new Attribute(std::move(name), &value);
   obj = property->lookup("F");
   if (obj.isString()) {
-    attribute->setFormattedValue(obj.getString()->getCString());
+    attribute->setFormattedValue(obj.getString()->c_str());
   } else if (!obj.isNull()) {
     error(errSyntaxWarning, -1, "F object is wrong type ({0:s})", obj.getTypeName());
   }
@@ -866,7 +860,7 @@ StructElement::StructElement(int mcid, StructTreeRoot *treeRootA, StructElement 
   assert(parent);
 }
 
-StructElement::StructElement(const Ref& ref, StructTreeRoot *treeRootA, StructElement *parentA):
+StructElement::StructElement(const Ref ref, StructTreeRoot *treeRootA, StructElement *parentA):
   type(OBJR),
   treeRoot(treeRootA),
   parent(parentA),
@@ -884,25 +878,25 @@ StructElement::~StructElement()
     delete s;
 }
 
-GBool StructElement::isBlock() const
+bool StructElement::isBlock() const
 {
   const TypeMapEntry *entry = getTypeMapEntry(type);
-  return entry ? (entry->elementType == elementTypeBlock) : gFalse;
+  return entry ? (entry->elementType == elementTypeBlock) : false;
 }
 
-GBool StructElement::isInline() const
+bool StructElement::isInline() const
 {
   const TypeMapEntry *entry = getTypeMapEntry(type);
-  return entry ? (entry->elementType == elementTypeInline) : gFalse;
+  return entry ? (entry->elementType == elementTypeInline) : false;
 }
 
-GBool StructElement::isGrouping() const
+bool StructElement::isGrouping() const
 {
   const TypeMapEntry *entry = getTypeMapEntry(type);
-  return entry ? (entry->elementType == elementTypeGrouping) : gFalse;
+  return entry ? (entry->elementType == elementTypeGrouping) : false;
 }
 
-GBool StructElement::hasPageRef() const
+bool StructElement::hasPageRef() const
 {
   return pageRef.isRef() || (parent && parent->hasPageRef());
 }
@@ -911,13 +905,13 @@ bool StructElement::getPageRef(Ref& ref) const
 {
   if (pageRef.isRef()) {
     ref = pageRef.getRef();
-    return gTrue;
+    return true;
   }
 
   if (parent)
     return parent->getPageRef(ref);
 
-  return gFalse;
+  return false;
 }
 
 const char *StructElement::getTypeName() const
@@ -925,7 +919,7 @@ const char *StructElement::getTypeName() const
   return typeToName(type);
 }
 
-const Attribute *StructElement::findAttribute(Attribute::Type attributeType, GBool inherit,
+const Attribute *StructElement::findAttribute(Attribute::Type attributeType, bool inherit,
                                               Attribute::Owner attributeOwner) const
 {
   if (isContent())
@@ -972,7 +966,7 @@ const Attribute *StructElement::findAttribute(Attribute::Type attributeType, GBo
   return nullptr;
 }
 
-GooString* StructElement::appendSubTreeText(GooString *string, GBool recursive) const
+GooString* StructElement::appendSubTreeText(GooString *string, bool recursive) const
 {
   if (isContent() && !isObjectRef()) {
     MarkedContentOutputDev mcdev(getMCID());
@@ -1016,7 +1010,7 @@ const TextSpanArray& StructElement::getTextSpansInternal(MarkedContentOutputDev&
     endPage = treeRoot->getDoc()->getNumPages();
   }
 
-  treeRoot->getDoc()->displayPages(&mcdev, startPage, endPage, 72.0, 72.0, 0, gTrue, gFalse, gFalse);
+  treeRoot->getDoc()->displayPages(&mcdev, startPage, endPage, 72.0, 72.0, 0, true, false, false);
   return mcdev.getTextSpans();
 }
 
@@ -1159,14 +1153,14 @@ void StructElement::parse(Dict *element)
     if (classes.isName()) {
       Object attr = treeRoot->getClassMap()->lookup(classes.getName());
       if (attr.isDict()) {
-        parseAttributes(attr.getDict(), gTrue);
+        parseAttributes(attr.getDict(), true);
       } else if (attr.isArray()) {
         for (int i = 0; i < attr.arrayGetLength(); i++) {
           unsigned attrIndex = getNumAttributes();
           Object iobj = attr.arrayGet(i);
           if (iobj.isDict()) {
             attrIndex = getNumAttributes();
-            parseAttributes(iobj.getDict(), gTrue);
+            parseAttributes(iobj.getDict(), true);
           } else if (iobj.isInt()) {
             // Set revision numbers for the elements previously created.
             const int revision = iobj.getInt();
@@ -1270,7 +1264,7 @@ void StructElement::parseChildren(Dict *element, std::set<int> &seen)
   }
 }
 
-void StructElement::parseAttributes(Dict *attributes, GBool keepExisting)
+void StructElement::parseAttributes(Dict *attributes, bool keepExisting)
 {
   Object owner = attributes->lookup("O");
   if (owner.isName("UserProperties")) {
@@ -1306,10 +1300,10 @@ void StructElement::parseAttributes(Dict *attributes, GBool keepExisting)
 
           // Check if the attribute is already defined.
           if (keepExisting) {
-            GBool exists = gFalse;
+            bool exists = false;
             for (unsigned j = 0; j < getNumAttributes(); j++) {
               if (getAttribute(j)->getType() == type) {
-                exists = gTrue;
+                exists = true;
                 break;
               }
             }
@@ -1319,7 +1313,7 @@ void StructElement::parseAttributes(Dict *attributes, GBool keepExisting)
 
           if (type != Attribute::Unknown) {
             Object value = attributes->getVal(i);
-            GBool typeCheckOk = gTrue;
+            bool typeCheckOk = true;
             Attribute *attribute = new Attribute(type, &value);
 
             if (attribute->isOk() && (typeCheckOk = attribute->checkType(this))) {

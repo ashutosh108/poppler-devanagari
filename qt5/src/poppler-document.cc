@@ -7,7 +7,7 @@
  * Copyright (C) 2012 Koji Otani <sho@bbr.jp>
  * Copyright (C) 2012, 2013 Thomas Freitag <Thomas.Freitag@alfa.de>
  * Copyright (C) 2012 Fabio D'Urso <fabiodurso@hotmail.it>
- * Copyright (C) 2014 Adam Reichold <adamreichold@myopera.com>
+ * Copyright (C) 2014, 2018 Adam Reichold <adam.reichold@t-online.de>
  * Copyright (C) 2015 William Bader <williambader@hotmail.com>
  * Copyright (C) 2016 Jakub Alba <jakubalba@gmail.com>
  * Copyright (C) 2017 Adrian Johnson <ajohnson@redneon.com>
@@ -56,6 +56,7 @@
 namespace Poppler {
 
   int DocumentData::count = 0;
+  QMutex DocumentData::mutex;
 
   Document *Document::load(const QString &filePath, const QByteArray &ownerPassword,
 			   const QByteArray &userPassword)
@@ -567,8 +568,12 @@ namespace Poppler {
 	GooString label_g(label.toLatin1().data());
 	int index;
 
-	if (!m_doc->doc->getCatalog()->labelToIndex (&label_g, &index))
-	    return nullptr;
+	if (!m_doc->doc->getCatalog()->labelToIndex (&label_g, &index)) {
+	    std::unique_ptr<GooString> label_ug(QStringToUnicodeGooString(label));
+	    if (!m_doc->doc->getCatalog()->labelToIndex (label_ug.get(), &index)) {
+	        return nullptr;
+	    }
+	}
 
 	return page(index);
     }
@@ -756,9 +761,9 @@ namespace Poppler {
             return false;
 
         if (permanentId)
-            *permanentId = gooPermanentId.getCString();
+            *permanentId = gooPermanentId.c_str();
         if (updateId)
-            *updateId = gooUpdateId.getCString();
+            *updateId = gooUpdateId.c_str();
 
         return true;
     }

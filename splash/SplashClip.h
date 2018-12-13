@@ -22,10 +22,6 @@
 #ifndef SPLASHCLIP_H
 #define SPLASHCLIP_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
 #include "SplashTypes.h"
 #include "SplashMath.h"
 #include "SplashXPathScanner.h"
@@ -52,7 +48,7 @@ public:
   // Create a clip, for the given rectangle.
   SplashClip(SplashCoord x0, SplashCoord y0,
 	     SplashCoord x1, SplashCoord y1,
-	     GBool antialiasA);
+	     bool antialiasA);
 
   // Copy a clip.
   SplashClip *copy() { return new SplashClip(this); }
@@ -72,34 +68,34 @@ public:
 
   // Interesect the clip with <path>.
   SplashError clipToPath(SplashPath *path, SplashCoord *matrix,
-			 SplashCoord flatness, GBool eo);
+			 SplashCoord flatness, bool eo);
 
   // Returns true if (<x>,<y>) is inside the clip.
-  GBool test(int x, int y)
+  bool test(int x, int y)
   {
     int i;
 
     // check the rectangle
     if (x < xMinI || x > xMaxI || y < yMinI || y > yMaxI) {
-      return gFalse;
+      return false;
     }
 
     // check the paths
     if (antialias) {
       for (i = 0; i < length; ++i) {
         if (!scanners[i]->test(x * splashAASize, y * splashAASize)) {
-	  return gFalse;
+	  return false;
         }
       }
     } else {
       for (i = 0; i < length; ++i) {
         if (!scanners[i]->test(x, y)) {
-	  return gFalse;
+	  return false;
         }
       }
     }
 
-    return gTrue;
+    return true;
   }
 
   // Tests a rectangle against the clipping region.  Returns one of:
@@ -121,7 +117,7 @@ public:
   // all non-zero pixels are between <x0> and <x1>.  This function
   // will update <x0> and <x1>.
   void clipAALine(SplashBitmap *aaBuf, int *x0, int *x1, int y,
-    GBool adjustVertLine = gFalse);
+    bool adjustVertLine = false);
 
   // Get the rectangle part of the clip region.
   SplashCoord getXMin() { return xMin; }
@@ -143,11 +139,11 @@ protected:
   SplashClip(SplashClip *clip);
   void grow(int nPaths);
 
-  GBool antialias;
+  bool antialias;
   SplashCoord xMin, yMin, xMax, yMax;
   int xMinI, yMinI, xMaxI, yMaxI;
   SplashXPath **paths;
-  Guchar *flags;
+  unsigned char *flags;
   SplashXPathScanner **scanners;
   int length, size;
 };

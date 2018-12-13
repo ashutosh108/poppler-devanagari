@@ -17,7 +17,7 @@
 // Copyright (C) 2006 Thorkild Stray <thorkild@ifi.uio.no>
 // Copyright (C) 2007, 2017 Adrian Johnson <ajohnson@redneon.com>
 // Copyright (C) 2009 Carlos Garcia Campos <carlosgc@gnome.org>
-// Copyright (C) 2009, 2012, 2013 Albert Astals Cid <aacid@kde.org>
+// Copyright (C) 2009, 2012, 2013, 2018 Albert Astals Cid <aacid@kde.org>
 // Copyright (C) 2012 Thomas Freitag <Thomas.Freitag@alfa.de>
 // Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
@@ -27,10 +27,6 @@
 //========================================================================
 
 #include <config.h>
-
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
 
 #include <stddef.h>
 #include "Object.h"
@@ -42,7 +38,15 @@
 // OutputDev
 //------------------------------------------------------------------------
 
-void OutputDev::setDefaultCTM(double *ctm) {
+OutputDev::OutputDev()
+#ifdef USE_CMS
+ : iccColorSpaceCache(5)
+#endif
+ {}
+
+OutputDev::~OutputDev() = default;
+
+void OutputDev::setDefaultCTM(const double *ctm) {
   int i;
   double det;
 
@@ -89,15 +93,15 @@ void OutputDev::updateAll(GfxState *state) {
   updateFont(state);
 }
 
-GBool OutputDev::beginType3Char(GfxState *state, double x, double y,
+bool OutputDev::beginType3Char(GfxState *state, double x, double y,
 				double dx, double dy,
 				CharCode code, Unicode *u, int uLen) {
-  return gFalse;
+  return false;
 }
 
 void OutputDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
-			      int width, int height, GBool invert,
-			      GBool interpolate, GBool inlineImg) {
+			      int width, int height, bool invert,
+			      bool interpolate, bool inlineImg) {
   int i, j;
 
   if (inlineImg) {
@@ -111,9 +115,9 @@ void OutputDev::drawImageMask(GfxState *state, Object *ref, Stream *str,
 
 void OutputDev::setSoftMaskFromImageMask(GfxState *state,
 					 Object *ref, Stream *str,
-					 int width, int height, GBool invert,
-					 GBool inlineImg, double *baseMatrix) {
-  drawImageMask(state, ref, str, width, height, invert, gFalse, inlineImg);
+					 int width, int height, bool invert,
+					 bool inlineImg, double *baseMatrix) {
+  drawImageMask(state, ref, str, width, height, invert, false, inlineImg);
 }
 
 void OutputDev::unsetSoftMaskFromImageMask(GfxState *state, double *baseMatrix) {
@@ -122,7 +126,7 @@ void OutputDev::unsetSoftMaskFromImageMask(GfxState *state, double *baseMatrix) 
 
 void OutputDev::drawImage(GfxState *state, Object *ref, Stream *str,
 			  int width, int height, GfxImageColorMap *colorMap,
-			  GBool interpolate, int *maskColors, GBool inlineImg) {
+			  bool interpolate, int *maskColors, bool inlineImg) {
   int i, j;
 
   if (inlineImg) {
@@ -138,23 +142,23 @@ void OutputDev::drawImage(GfxState *state, Object *ref, Stream *str,
 void OutputDev::drawMaskedImage(GfxState *state, Object *ref, Stream *str,
 				int width, int height,
 				GfxImageColorMap *colorMap,
-				GBool interpolate,
+				bool interpolate,
 				Stream *maskStr,
 				int maskWidth, int maskHeight,
-				GBool maskInvert,
-				GBool maskInterpolate) {
-  drawImage(state, ref, str, width, height, colorMap, interpolate, nullptr, gFalse);
+				bool maskInvert,
+				bool maskInterpolate) {
+  drawImage(state, ref, str, width, height, colorMap, interpolate, nullptr, false);
 }
 
 void OutputDev::drawSoftMaskedImage(GfxState *state, Object *ref, Stream *str,
 				    int width, int height,
 				    GfxImageColorMap *colorMap,
-				    GBool interpolate,
+				    bool interpolate,
 				    Stream *maskStr,
 				    int maskWidth, int maskHeight,
 				    GfxImageColorMap *maskColorMap,
-				    GBool maskInterpolate) {
-  drawImage(state, ref, str, width, height, colorMap, interpolate, nullptr, gFalse);
+				    bool maskInterpolate) {
+  drawImage(state, ref, str, width, height, colorMap, interpolate, nullptr, false);
 }
 
 void OutputDev::endMarkedContent(GfxState *state) {
@@ -185,10 +189,3 @@ void OutputDev::startProfile() {
 std::unique_ptr<std::unordered_map<std::string, ProfileData>> OutputDev::endProfile() {
   return std::move(profileHash);
 }
-
-#ifdef USE_CMS
-PopplerCache *OutputDev::getIccColorSpaceCache()
-{
-  return &iccColorSpaceCache;
-}
-#endif

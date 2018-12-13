@@ -27,6 +27,7 @@
 // Copyright (C) 2013 José Aliste <jaliste@src.gnome.org>
 // Copyright (C) 2016 Masamichi Hosoda <trueroad@trueroad.jp>
 // Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -36,15 +37,11 @@
 #ifndef CATALOG_H
 #define CATALOG_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
 #include "poppler-config.h"
 #include "Object.h"
-#include "goo/GooMutex.h"
 
 #include <vector>
+#include <memory>
 
 class PDFDoc;
 class XRef;
@@ -119,7 +116,7 @@ public:
   Catalog& operator=(const Catalog &) = delete;
 
   // Is catalog valid?
-  GBool isOk() { return ok; }
+  bool isOk() { return ok; }
 
   // Get number of pages.
   int getNumPages();
@@ -147,7 +144,7 @@ public:
     markInfoUserProperties = 1 << 2,
     markInfoSuspects       = 1 << 3,
   };
-  Guint getMarkInfo();
+  unsigned int getMarkInfo();
 
   // Find a page, given its object ID.  Returns page number, or 0 if
   // not found.
@@ -163,7 +160,7 @@ public:
   int numDests();
 
   // Get the i'th named destination name in name-dict
-  char *getDestsName(int i);
+  const char *getDestsName(int i);
 
   // Get the i'th named destination link destination in name-dict
   LinkDest *getDestsDest(int i);
@@ -191,8 +188,8 @@ public:
   GooString *getJS(int i);
 
   // Convert between page indices and page labels.
-  GBool labelToIndex(GooString *label, int *index);
-  GBool indexToLabel(int index, GooString *label);
+  bool labelToIndex(GooString *label, int *index);
+  bool indexToLabel(int index, GooString *label);
 
   Object *getOutline();
 
@@ -253,9 +250,7 @@ private:
 
   PDFDoc *doc;
   XRef *xref;			// the xref table for this PDF file
-  Page **pages;			// array of pages
-  Ref *pageRefs;		// object ID for each page
-  int lastCachedPage;
+  std::vector<std::pair<std::unique_ptr<Page>, Ref>> pages;
   std::vector<Object> *pagesList;
   std::vector<Ref> *pagesRefList;
   std::vector<PageAttrs *> *attrsList;
@@ -263,7 +258,6 @@ private:
   Form *form;
   ViewerPreferences *viewerPrefs;
   int numPages;			// number of pages
-  int pagesSize;		// size of pages array
   Object dests;			// named destination dictionary
   Object names;			// named names dictionary
   NameTree *destNameTree;	// named destination name-tree
@@ -272,18 +266,18 @@ private:
   GooString *baseURI;		// base URI for URI-type links
   Object metadata;		// metadata stream
   StructTreeRoot *structTreeRoot;	// structure tree root
-  Guint markInfo;               // Flags from MarkInfo dictionary
+  unsigned int markInfo;               // Flags from MarkInfo dictionary
   Object outline;		// outline dictionary
   Object acroForm;		// AcroForm dictionary
   Object viewerPreferences;     // ViewerPreference dictionary
   OCGs *optContent;		// Optional Content groups
-  GBool ok;			// true if catalog is valid
+  bool ok;			// true if catalog is valid
   PageLabelInfo *pageLabelInfo; // info about page labels
   PageMode pageMode;		// page mode
   PageLayout pageLayout;	// page layout
   Object additionalActions;     // page additional actions
 
-  GBool cachePageTree(int page); // Cache first <page> pages.
+  bool cachePageTree(int page); // Cache first <page> pages.
   Object *findDestInTree(Object *tree, GooString *name, Object *obj);
 
   Object *getNames();
@@ -291,10 +285,8 @@ private:
   NameTree *getEmbeddedFileNameTree();
   NameTree *getJSNameTree();
   LinkDest *createLinkDest(Object *obj);
-#ifdef MULTITHREADED
-  GooMutex mutex;
-#endif
 
+  mutable std::recursive_mutex mutex;
 };
 
 #endif

@@ -26,10 +26,6 @@
 
 #ifdef USE_FIXEDPOINT
 
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #include "FixedPoint.h"
 
 #define ln2 ((FixedPoint)0.69314718)
@@ -121,19 +117,19 @@ int FixedPoint::div(int x, int y) {
   }
 }
 
-GBool FixedPoint::divCheck(FixedPoint x, FixedPoint y, FixedPoint *result) {
+bool FixedPoint::divCheck(FixedPoint x, FixedPoint y, FixedPoint *result) {
   FixPtInt64 z;
 
   z = ((FixPtInt64)x.val << fixptShift) / y.val;
   if ((z == 0 && x != 0) ||
       z >= ((FixPtInt64)1 << 31) || z < -((FixPtInt64)1 << 31)) {
-    return gFalse;
+    return false;
   }
   result->val = z;
-  return gTrue;
+  return true;
 }
 
-GBool FixedPoint::checkDet(FixedPoint m11, FixedPoint m12,
+bool FixedPoint::checkDet(FixedPoint m11, FixedPoint m12,
                           FixedPoint m21, FixedPoint m22,
                           FixedPoint epsilon) {
   FixPtInt64 det, e;

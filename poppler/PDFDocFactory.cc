@@ -7,6 +7,7 @@
 // Copyright 2010 Hib Eris <hib@hiberis.nl>
 // Copyright 2010 Albert Astals Cid <aacid@kde.org>
 // Copyright 2017 Adrian Johnson <ajohnson@redneon.com>
+// Copyright 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 //========================================================================
 
@@ -35,17 +36,17 @@ PDFDocFactory::PDFDocFactory(GooList *pdfDocBuilders)
   } else {
     builders = new GooList();
   }
+  builders->push_back(new LocalPDFDocBuilder());
+  builders->push_back(new StdinPDFDocBuilder());
 #ifdef ENABLE_LIBCURL
-  builders->insert(0, new CurlPDFDocBuilder());
+  builders->push_back(new CurlPDFDocBuilder());
 #endif
-  builders->insert(0, new StdinPDFDocBuilder());
-  builders->insert(0, new LocalPDFDocBuilder());
 }
 
 PDFDocFactory::~PDFDocFactory()
 {
   if (builders) {
-    deleteGooList(builders, PDFDocBuilder);
+    deleteGooList<PDFDocBuilder>(builders);
   }
 }
 
@@ -67,7 +68,7 @@ PDFDocFactory::createPDFDoc(const GooString &uri, GooString *ownerPassword,
 
 void PDFDocFactory::registerPDFDocBuilder(PDFDocBuilder *pdfDocBuilder)
 {
-  builders->append(pdfDocBuilder);
+  builders->push_back(pdfDocBuilder);
 }
 
 

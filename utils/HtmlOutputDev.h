@@ -34,12 +34,7 @@
 #ifndef HTMLOUTPUTDEV_H
 #define HTMLOUTPUTDEV_H
 
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #include <stdio.h>
-#include "goo/gtypes.h"
 #include "goo/GooList.h"
 #include "GfxFont.h"
 #include "OutputDev.h"
@@ -132,7 +127,7 @@ class HtmlPage {
 public:
 
   // Constructor.
-  HtmlPage(GBool rawOrder, char *imgExtVal);
+  HtmlPage(bool rawOrder, const char *imgExtVal);
 
   // Destructor.
   ~HtmlPage();
@@ -147,7 +142,7 @@ public:
   void addChar(GfxState *state, double x, double y,
 	       double dx, double dy, 
 		double ox, double oy, 
-		Unicode *u, int uLen); //Guchar c);
+		Unicode *u, int uLen); //unsigned char c);
 
   void updateFont(GfxState *state);
 
@@ -185,7 +180,7 @@ private:
   HtmlFont* getFont(HtmlString *hStr) { return fonts->Get(hStr->fontpos); }
 
   double fontSize;		// current font size
-  GBool rawOrder;		// keep strings in content stream order
+  bool rawOrder;		// keep strings in content stream order
 
   HtmlString *curStr;		// currently active string
 
@@ -193,7 +188,7 @@ private:
   HtmlString *xyStrings;	// strings in x-major order
   HtmlString *yxCur1, *yxCur2;	// cursors for yxStrings list
   
-  void setDocName(char* fname);
+  void setDocName(const char* fname);
   void dumpAsXML(FILE* f,int page);
   void dumpComplex(FILE* f, int page);
   int dumpComplexHeaders(FILE * const file, FILE *& pageFile, int page);
@@ -239,57 +234,57 @@ private:
 class HtmlOutputDev: public OutputDev {
 public:
 
-  // Open a text output file.  If <fileName> is NULL, no file is written
+  // Open a text output file.  If <fileName> is nullptr, no file is written
   // (this is useful, e.g., for searching text).  If <useASCII7> is true,
   // text is converted to 7-bit ASCII; otherwise, text is converted to
   // 8-bit ISO Latin-1.  <useASCII7> should also be set for Japanese
   // (EUC-JP) text.  If <rawOrder> is true, the text is kept in content
   // stream order.
-  HtmlOutputDev(Catalog *catalogA, char *fileName, char *title, 
-	  char *author,
-	  char *keywords,
-	  char *subject,
-	  char *date,
-	  char *extension,
-	  GBool rawOrder,
+  HtmlOutputDev(Catalog *catalogA, const char *fileName, const char *title,
+	  const char *author,
+	  const char *keywords,
+	  const char *subject,
+	  const char *date,
+	  const char *extension,
+	  bool rawOrder,
 	  int firstPage = 1,
-	  GBool outline = 0);
+	  bool outline = 0);
 
   // Destructor.
   virtual ~HtmlOutputDev();
 
   // Check if file was successfully created.
-  virtual GBool isOk() { return ok; }
+  virtual bool isOk() { return ok; }
 
   //---- get info about output device
 
   // Does this device use upside-down coordinates?
   // (Upside-down means (0,0) is the top left corner of the page.)
-  GBool upsideDown() override { return gTrue; }
+  bool upsideDown() override { return true; }
 
   // Does this device use drawChar() or drawString()?
-  GBool useDrawChar() override { return gTrue; }
+  bool useDrawChar() override { return true; }
 
   // Does this device use beginType3Char/endType3Char?  Otherwise,
   // text in Type 3 fonts will be drawn with drawChar/drawString.
-  GBool interpretType3Chars() override { return gFalse; }
+  bool interpretType3Chars() override { return false; }
 
   // Does this device need non-text content?
-  GBool needNonText() override { return gTrue; }
+  bool needNonText() override { return true; }
 
   //----- initialization and control
 
-  GBool checkPageSlice(Page *page, double hDPI, double vDPI,
-                       int rotate, GBool useMediaBox, GBool crop,
+  bool checkPageSlice(Page *page, double hDPI, double vDPI,
+                       int rotate, bool useMediaBox, bool crop,
                        int sliceX, int sliceY, int sliceW, int sliceH,
-                       GBool printing,
-                       GBool (* abortCheckCbk)(void *data) = NULL,
-                       void * abortCheckCbkData = NULL,
-                       GBool (*annotDisplayDecideCbk)(Annot *annot, void *user_data) = NULL,
-                       void *annotDisplayDecideCbkData = NULL) override
+                       bool printing,
+                       bool (* abortCheckCbk)(void *data) = nullptr,
+                       void * abortCheckCbkData = nullptr,
+                       bool (*annotDisplayDecideCbk)(Annot *annot, void *user_data) = nullptr,
+                       void *annotDisplayDecideCbkData = nullptr) override
   {
    docPage = page;
-   return gTrue;
+   return true;
   }
 
 
@@ -312,11 +307,11 @@ public:
   
   void drawImageMask(GfxState *state, Object *ref,
 		     Stream *str,
-		     int width, int height, GBool invert,
-		     GBool interpolate, GBool inlineImg) override;
+		     int width, int height, bool invert,
+		     bool interpolate, bool inlineImg) override;
   void drawImage(GfxState *state, Object *ref, Stream *str,
 		 int width, int height, GfxImageColorMap *colorMap,
-		 GBool interpolate, int *maskColors, GBool inlineImg) override;
+		 bool interpolate, int *maskColors, bool inlineImg) override;
 
   //new feature    
   virtual int DevType() {return 1234;}
@@ -324,10 +319,10 @@ public:
   int getPageWidth() { return maxPageWidth; }
   int getPageHeight() { return maxPageHeight; }
 
-  GBool dumpDocOutline(PDFDoc* doc);
+  bool dumpDocOutline(PDFDoc* doc);
 
 private:
-  // convert encoding into a HTML standard, or encoding->getCString if not
+  // convert encoding into a HTML standard, or encoding->c_str if not
   // recognized. Will delete encoding for you and return a new one
   // that you have to delete
   static GooString* mapEncodingToHtml(GooString* encoding);
@@ -335,26 +330,24 @@ private:
   GooString* getLinkDest(AnnotLink *link);
   void dumpMetaVars(FILE *);
   void doFrame(int firstPage);
-  GBool newHtmlOutlineLevel(FILE *output, const GooList *outlines, int level = 1);
+  bool newHtmlOutlineLevel(FILE *output, const GooList *outlines, int level = 1);
   void newXmlOutlineLevel(FILE *output, const GooList *outlines);
-#ifndef DISABLE_OUTLINE
   int getOutlinePageNum(OutlineItem *item);
-#endif
   void drawJpegImage(GfxState *state, Stream *str);
   void drawPngImage(GfxState *state, Stream *str, int width, int height,
-                    GfxImageColorMap *colorMap, GBool isMask = gFalse);
+                    GfxImageColorMap *colorMap, bool isMask = false);
   GooString *createImageFileName(const char *ext);
 
   FILE *fContentsFrame;
   FILE *page;                   // html file
   //FILE *tin;                    // image log file
-  //GBool write;
-  GBool needClose;		// need to close the file?
+  //bool write;
+  bool needClose;		// need to close the file?
   HtmlPage *pages;		// text for the current page
-  GBool rawOrder;		// keep text in content stream order
-  GBool doOutline;		// output document outline
-  GBool ok;			// set up ok?
-  GBool dumpJPEG;
+  bool rawOrder;		// keep text in content stream order
+  bool doOutline;		// output document outline
+  bool ok;			// set up ok?
+  bool dumpJPEG;
   int pageNum;
   int maxPageWidth;
   int maxPageHeight;

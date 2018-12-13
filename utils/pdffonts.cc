@@ -18,6 +18,7 @@
 // Copyright (C) 2010 Hib Eris <hib@hiberis.nl>
 // Copyright (C) 2012, 2017 Adrian Johnson <ajohnson@redneon.com>
 // Copyright (C) 2013 Suzuki Toshiya <mpsuzuki@hiroshima-u.ac.jp>
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -58,11 +59,11 @@ static const char *fontTypeNames[] = {
 
 static int firstPage = 1;
 static int lastPage = 0;
-static GBool showSubst = gFalse;
+static bool showSubst = false;
 static char ownerPassword[33] = "\001";
 static char userPassword[33] = "\001";
-static GBool printVersion = gFalse;
-static GBool printHelp = gFalse;
+static bool printVersion = false;
+static bool printHelp = false;
 
 static const ArgDesc argDesc[] = {
   {"-f",      argInt,      &firstPage,     0,
@@ -92,7 +93,7 @@ int main(int argc, char *argv[]) {
   PDFDoc *doc;
   GooString *fileName;
   GooString *ownerPW, *userPW;
-  GBool ok;
+  bool ok;
   int exitCode;
 
   Win32Console win32Console(&argc, &argv);
@@ -174,7 +175,7 @@ int main(int argc, char *argv[]) {
           FontInfo *font = (FontInfo *)fonts->get(i);
           if (font->getFile()) {
             printf("%-36s",
-                   font->getName() ? font->getName()->getCString() : "[none]");
+                   font->getName() ? font->getName()->c_str() : "[none]");
             const Ref fontRef = font->getRef();
             if (fontRef.gen >= 100000) {
               printf(" [none]");
@@ -182,8 +183,8 @@ int main(int argc, char *argv[]) {
               printf(" %6d %2d", fontRef.num, fontRef.gen);
             }
             printf(" %-36s %s\n",
-                   font->getSubstituteName() ? font->getSubstituteName()->getCString() : "[none]",
-                   font->getFile()->getCString());
+                   font->getSubstituteName() ? font->getSubstituteName()->c_str() : "[none]",
+                   font->getFile()->c_str());
           }
           delete font;
         }
@@ -197,9 +198,9 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < fonts->getLength(); ++i) {
           FontInfo *font = (FontInfo *)fonts->get(i);
           printf("%-36s %-17s %-16s %-3s %-3s %-3s",
-                 font->getName() ? font->getName()->getCString() : "[none]",
+                 font->getName() ? font->getName()->c_str() : "[none]",
                  fontTypeNames[font->getType()],
-                 font->getEncoding()->getCString(),
+                 font->getEncoding()->c_str(),
                  font->getEmbedded() ? "yes" : "no",
                  font->getSubset() ? "yes" : "no",
                  font->getToUnicode() ? "yes" : "no");
@@ -222,10 +223,6 @@ int main(int argc, char *argv[]) {
   delete doc;
   delete globalParams;
  err0:
-
-  // check for memory leaks
-  Object::memCheck(stderr);
-  gMemReport(stderr);
 
   return exitCode;
 }

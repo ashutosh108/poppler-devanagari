@@ -11,7 +11,7 @@
 // All changes made under the Poppler project to this file are licensed
 // under GPL version 2 or later
 //
-// Copyright (C) 2006, 2009, 2010, 2012, 2015 Albert Astals Cid <aacid@kde.org>
+// Copyright (C) 2006, 2009, 2010, 2012, 2015, 2018 Albert Astals Cid <aacid@kde.org>
 // Copyright (C) 2007 Ilmari Heikkinen <ilmari.heikkinen@gmail.com>
 // Copyright (C) 2009 Shen Liang <shenzhuxi@gmail.com>
 // Copyright (C) 2009 Stefan Thomas <thomas@eload24.com>
@@ -21,7 +21,7 @@
 // Copyright (C) 2010, 2015 William Bader <williambader@hotmail.com>
 // Copyright (C) 2011-2013 Thomas Freitag <Thomas.Freitag@alfa.de>
 // Copyright (C) 2012 Anthony Wesley <awesley@smartnetworks.com.au>
-// Copyright (C) 2015 Adam Reichold <adamreichold@myopera.com>
+// Copyright (C) 2015, 2018 Adam Reichold <adamreichold@myopera.com>
 // Copyright (C) 2016 Kenji Uno <ku@digitaldolphins.jp>
 // Copyright (C) 2018 Martin Packman <gzlist@googlemail.com>
 //
@@ -31,10 +31,6 @@
 //========================================================================
 
 #include <config.h>
-
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -55,8 +51,8 @@
 //------------------------------------------------------------------------
 
 SplashBitmap::SplashBitmap(int widthA, int heightA, int rowPadA,
-			   SplashColorMode modeA, GBool alphaA,
-			   GBool topDown, GooList *separationListA) {
+			   SplashColorMode modeA, bool alphaA,
+			   bool topDown, GooList *separationListA) {
   width = widthA;
   height = heightA;
   mode = modeA;
@@ -119,7 +115,7 @@ SplashBitmap::SplashBitmap(int widthA, int heightA, int rowPadA,
       rowSize = -rowSize;
     }
     if (alphaA) {
-      alpha = (Guchar *)gmallocn(width, height);
+      alpha = (unsigned char *)gmallocn(width, height);
     } else {
       alpha = nullptr;
     }
@@ -129,14 +125,14 @@ SplashBitmap::SplashBitmap(int widthA, int heightA, int rowPadA,
   separationList = new GooList();
   if (separationListA != nullptr)
     for (int i = 0; i < separationListA->getLength(); i++)
-      separationList->append(((GfxSeparationColorSpace *) separationListA->get(i))->copy());
+      separationList->push_back(((GfxSeparationColorSpace *) separationListA->get(i))->copy());
 }
 
 SplashBitmap *SplashBitmap::copy(SplashBitmap *src) {
   SplashBitmap *result = new SplashBitmap(src->getWidth(), src->getHeight(), src->getRowPad(), 
     src->getMode(), src->getAlphaPtr() != nullptr, src->getRowSize() >= 0, src->getSeparationList());
-  Guchar *dataSource = src->getDataPtr();
-  Guchar *dataDest = result->getDataPtr();
+  unsigned char *dataSource = src->getDataPtr();
+  unsigned char *dataDest = result->getDataPtr();
   int amount = src->getRowSize();
   if (amount < 0) {
     dataSource = dataSource + (src->getHeight() - 1) * amount;
@@ -161,7 +157,7 @@ SplashBitmap::~SplashBitmap() {
     }
   }
   gfree(alpha);
-  deleteGooList(separationList, GfxSeparationColorSpace);
+  deleteGooList<GfxSeparationColorSpace>(separationList);
 }
 
 
@@ -326,7 +322,7 @@ void SplashBitmap::getPixel(int x, int y, SplashColorPtr pixel) {
   }
 }
 
-Guchar SplashBitmap::getAlpha(int x, int y) {
+unsigned char SplashBitmap::getAlpha(int x, int y) {
   return alpha[y * width + x];
 }
 
@@ -338,7 +334,7 @@ SplashColorPtr SplashBitmap::takeData() {
   return data2;
 }
 
-SplashError SplashBitmap::writeImgFile(SplashImageFileFormat format, char *fileName, int hDPI, int vDPI, WriteImgParams* params) {
+SplashError SplashBitmap::writeImgFile(SplashImageFileFormat format, const char *fileName, int hDPI, int vDPI, WriteImgParams* params) {
   FILE *f;
   SplashError e;
 
@@ -416,7 +412,7 @@ SplashError SplashBitmap::writeImgFile(SplashImageFileFormat format, FILE *f, in
         writer = new TiffWriter();
       }
       if (writer && params) {
-        ((TiffWriter *)writer)->setCompressionString(params->tiffCompression.getCString());
+        ((TiffWriter *)writer)->setCompressionString(params->tiffCompression.c_str());
       }
       break;
     #endif
@@ -542,22 +538,22 @@ void SplashBitmap::getXBGRLine(int yl, SplashColorPtr line, ConversionMode conve
   }
 }
 
-static inline Guchar div255(int x) {
-  return (Guchar)((x + (x >> 8) + 0x80) >> 8);
+static inline unsigned char div255(int x) {
+  return (unsigned char)((x + (x >> 8) + 0x80) >> 8);
 }
 
-GBool SplashBitmap::convertToXBGR(ConversionMode conversionMode) {
+bool SplashBitmap::convertToXBGR(ConversionMode conversionMode) {
   if (mode == splashModeXBGR8) {
     if (conversionMode != conversionOpaque) {
       // Copy the alpha channel into the fourth component so that XBGR becomes ABGR.
       const SplashColorPtr dbegin = data;
       const SplashColorPtr dend = data + rowSize * height;
 
-      Guchar *const abegin = alpha;
-      Guchar *const aend = alpha + width * height;
+      unsigned char *const abegin = alpha;
+      unsigned char *const aend = alpha + width * height;
 
       SplashColorPtr d = dbegin;
-      Guchar *a = abegin;
+      unsigned char *a = abegin;
 
       if (conversionMode == conversionAlphaPremultiplied) {
           for (; d < dend && a < aend; d += 4, a += 1) {
@@ -573,7 +569,7 @@ GBool SplashBitmap::convertToXBGR(ConversionMode conversionMode) {
       }
     }
 
-    return gTrue;
+    return true;
   }
   
   int newrowSize = width * 4;

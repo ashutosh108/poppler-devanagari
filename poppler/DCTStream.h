@@ -16,15 +16,6 @@
 #ifndef DCTSTREAM_H
 #define DCTSTREAM_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
-
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #include "poppler-config.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -71,13 +62,13 @@ public:
   int getChar() override;
   int lookChar() override;
   GooString *getPSFilter(int psLevel, const char *indent) override;
-  GBool isBinary(GBool last = gTrue) override;
+  bool isBinary(bool last = true) override;
 
 private:
   void init();
 
-  GBool hasGetChars() override { return true; }
-  int getChars(int nChars, Guchar *buffer) override;
+  bool hasGetChars() override { return true; }
+  int getChars(int nChars, unsigned char *buffer) override;
 
   int colorXform;
   JSAMPLE *current;

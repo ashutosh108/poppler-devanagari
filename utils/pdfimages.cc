@@ -20,6 +20,7 @@
 // Copyright (C) 2010 Jakob Voss <jakob.voss@gbv.de>
 // Copyright (C) 2012, 2013, 2017 Adrian Johnson <ajohnson@redneon.com>
 // Copyright (C) 2013 Suzuki Toshiya <mpsuzuki@hiroshima-u.ac.jp>
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -51,20 +52,20 @@
 
 static int firstPage = 1;
 static int lastPage = 0;
-static GBool listImages = gFalse;
-static GBool enablePNG = gFalse;
-static GBool enableTiff = gFalse;
-static GBool dumpJPEG = gFalse;
-static GBool dumpJP2 = gFalse;
-static GBool dumpJBIG2 = gFalse;
-static GBool dumpCCITT = gFalse;
-static GBool allFormats = gFalse;
-static GBool pageNames = gFalse;
+static bool listImages = false;
+static bool enablePNG = false;
+static bool enableTiff = false;
+static bool dumpJPEG = false;
+static bool dumpJP2 = false;
+static bool dumpJBIG2 = false;
+static bool dumpCCITT = false;
+static bool allFormats = false;
+static bool pageNames = false;
 static char ownerPassword[33] = "\001";
 static char userPassword[33] = "\001";
-static GBool quiet = gFalse;
-static GBool printVersion = gFalse;
-static GBool printHelp = gFalse;
+static bool quiet = false;
+static bool printVersion = false;
+static bool printHelp = false;
 
 static const ArgDesc argDesc[] = {
   {"-f",      argInt,      &firstPage,     0,
@@ -118,7 +119,7 @@ int main(int argc, char *argv[]) {
   char *imgRoot = nullptr;
   GooString *ownerPW, *userPW;
   ImageOutputDev *imgOut;
-  GBool ok;
+  bool ok;
   int exitCode;
 
   Win32Console win32Console(&argc, &argv);
@@ -202,12 +203,12 @@ int main(int argc, char *argv[]) {
   imgOut = new ImageOutputDev(imgRoot, pageNames, listImages);
   if (imgOut->isOk()) {
     if (allFormats) {
-      imgOut->enablePNG(gTrue);
-      imgOut->enableTiff(gTrue);
-      imgOut->enableJpeg(gTrue);
-      imgOut->enableJpeg2000(gTrue);
-      imgOut->enableJBig2(gTrue);
-      imgOut->enableCCITT(gTrue);
+      imgOut->enablePNG(true);
+      imgOut->enableTiff(true);
+      imgOut->enableJpeg(true);
+      imgOut->enableJpeg2000(true);
+      imgOut->enableJBig2(true);
+      imgOut->enableCCITT(true);
     } else {
       imgOut->enablePNG(enablePNG);
       imgOut->enableTiff(enableTiff);
@@ -217,7 +218,7 @@ int main(int argc, char *argv[]) {
       imgOut->enableCCITT(dumpCCITT);
     }
     doc->displayPages(imgOut, firstPage, lastPage, 72, 72, 0,
-                      gTrue, gFalse, gFalse);
+                      true, false, false);
   }
   delete imgOut;
 
@@ -228,10 +229,6 @@ int main(int argc, char *argv[]) {
   delete doc;
   delete globalParams;
  err0:
-
-  // check for memory leaks
-  Object::memCheck(stderr);
-  gMemReport(stderr);
 
   return exitCode;
 }

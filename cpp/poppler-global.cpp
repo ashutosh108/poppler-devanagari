@@ -5,6 +5,7 @@
  * Copyright (C) 2015, Tamas Szekeres <szekerest@gmail.com>
  * Copyright (C) 2016 Jakub Alba <jakubalba@gmail.com>
  * Copyright (C) 2018, Albert Astals Cid <aacid@kde.org>
+ * Copyright (C) 2018 Suzuki Toshiya <mpsuzuki@hiroshima-u.ac.jp>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -226,7 +227,11 @@ byte_array ustring::to_utf8() const
         return byte_array();
     }
 
-    MiniIconv ic("UTF-8", "UTF-16");
+#ifdef WORDS_BIGENDIAN
+    MiniIconv ic("UTF-8", "UTF-16BE");
+#else
+    MiniIconv ic("UTF-8", "UTF-16LE");
+#endif
     if (!ic.is_valid()) {
         return byte_array();
     }
@@ -274,7 +279,11 @@ ustring ustring::from_utf8(const char *str, int len)
         }
     }
 
-    MiniIconv ic("UTF-16", "UTF-8");
+#ifdef WORDS_BIGENDIAN
+    MiniIconv ic("UTF-16BE", "UTF-8");
+#else
+    MiniIconv ic("UTF-16LE", "UTF-8");
+#endif
     if (!ic.is_valid()) {
         return ustring();
     }

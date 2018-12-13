@@ -374,7 +374,7 @@ static SplashColor splashColBlack;
 
 static SplashColorPtr  gBgColor = SPLASH_COL_WHITE_PTR;
 
-static void splashColorSet(SplashColorPtr col, Guchar red, Guchar green, Guchar blue, Guchar alpha)
+static void splashColorSet(SplashColorPtr col, unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
 {
     switch (gSplashColorMode)
     {
@@ -425,7 +425,7 @@ bool PdfEnginePoppler::load(const char *fileName)
     GooString *fileNameStr = new GooString(fileName);
     if (!fileNameStr) return false;
 
-    _pdfDoc = new PDFDoc(fileNameStr, nullptr, nullptr, (void*)nullptr);
+    _pdfDoc = new PDFDoc(fileNameStr, nullptr, nullptr, nullptr);
     if (!_pdfDoc->isOk()) {
         return false;
     }
@@ -435,8 +435,8 @@ bool PdfEnginePoppler::load(const char *fileName)
 
 SplashOutputDev * PdfEnginePoppler::outputDevice() {
     if (!_outputDev) {
-        GBool bitmapTopDown = gTrue;
-        _outputDev = new SplashOutputDev(gSplashColorMode, 4, gFalse, gBgColor, bitmapTopDown);
+        bool bitmapTopDown = true;
+        _outputDev = new SplashOutputDev(gSplashColorMode, 4, false, gBgColor, bitmapTopDown);
         if (_outputDev)
             _outputDev->startDoc(_pdfDoc);
     }
@@ -450,9 +450,9 @@ SplashBitmap *PdfEnginePoppler::renderBitmap(int pageNo, double zoomReal, int ro
 
     double hDPI = (double)PDF_FILE_DPI * zoomReal * 0.01;
     double vDPI = (double)PDF_FILE_DPI * zoomReal * 0.01;
-    GBool  useMediaBox = gFalse;
-    GBool  crop        = gTrue;
-    GBool  doLinks     = gTrue;
+    bool  useMediaBox = false;
+    bool  crop        = true;
+    bool  doLinks     = true;
     _pdfDoc->displayPage(_outputDev, pageNo, hDPI, vDPI, rotation, useMediaBox, 
         crop, doLinks, nullptr, nullptr);
 
@@ -739,7 +739,7 @@ static void StrList_Destroy(StrList **root)
     *root = nullptr;
 }
 
-static void my_error(void *, ErrorCategory, Goffset pos, char *msg) {
+static void my_error(void *, ErrorCategory, Goffset pos, const char *msg) {
 #if 0
     char        buf[4096], *p = buf;
 
@@ -839,7 +839,7 @@ static void RenderPdfAsText(const char *fileName)
 
     LogInfo("started: %s\n", fileName);
 
-    TextOutputDev * textOut = new TextOutputDev(nullptr, gTrue, 0, gFalse, gFalse);
+    TextOutputDev * textOut = new TextOutputDev(nullptr, true, 0, false, false);
     if (!textOut->isOk()) {
         delete textOut;
         return;
@@ -870,16 +870,16 @@ static void RenderPdfAsText(const char *fileName)
 
         msTimer.start();
         int rotate = 0;
-        GBool useMediaBox = gFalse;
-        GBool crop = gTrue;
-        GBool doLinks = gFalse;
+        bool useMediaBox = false;
+        bool crop = true;
+        bool doLinks = false;
         pdfDoc->displayPage(textOut, curPage, 72, 72, rotate, useMediaBox, crop, doLinks);
         txt = textOut->getText(0.0, 0.0, 10000.0, 10000.0);
         msTimer.stop();
         timeInMs = msTimer.getElapsed();
         if (gfTimings)
             LogInfo("page %d: %.2f ms\n", curPage, timeInMs);
-        printf("%s\n", txt->getCString());
+        printf("%s\n", txt->c_str());
         delete txt;
         txt = nullptr;
     }
@@ -1240,7 +1240,7 @@ int main(int argc, char **argv)
     globalParams = new GlobalParams();
     if (!globalParams)
         return 1;
-    globalParams->setErrQuiet(gFalse);
+    globalParams->setErrQuiet(false);
 
     FILE * outFile = nullptr;
     if (gOutFileName) {

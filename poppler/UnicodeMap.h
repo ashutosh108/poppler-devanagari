@@ -27,12 +27,7 @@
 #ifndef UNICODEMAP_H
 #define UNICODEMAP_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
 #include "poppler-config.h"
-#include "goo/gtypes.h"
 #include "CharTypes.h"
 #include <atomic>
 
@@ -50,7 +45,7 @@ typedef int (*UnicodeMapFunc)(Unicode u, char *buf, int bufSize);
 
 struct UnicodeMapRange {
   Unicode start, end;		// range of Unicode chars
-  Guint code, nBytes;		// first output code
+  unsigned int code, nBytes;		// first output code
 };
 
 struct UnicodeMapExt;
@@ -65,12 +60,12 @@ public:
   static UnicodeMap *parse(GooString *encodingNameA);
 
   // Create a resident UnicodeMap.
-  UnicodeMap(const char *encodingNameA, GBool unicodeOutA,
+  UnicodeMap(const char *encodingNameA, bool unicodeOutA,
 	     UnicodeMapRange *rangesA, int lenA);
 
   // Create a resident UnicodeMap that uses a function instead of a
   // list of ranges.
-  UnicodeMap(const char *encodingNameA, GBool unicodeOutA,
+  UnicodeMap(const char *encodingNameA, bool unicodeOutA,
 	     UnicodeMapFunc funcA);
 
   UnicodeMap(UnicodeMap &&other) noexcept;
@@ -86,13 +81,13 @@ public:
   void incRefCnt();
   void decRefCnt();
 
-  GooString *getEncodingName() { return encodingName; }
+  const GooString *getEncodingName() const { return encodingName; }
 
-  GBool isUnicode() { return unicodeOut; }
+  bool isUnicode() const { return unicodeOut; }
 
   // Return true if this UnicodeMap matches the specified
   // <encodingNameA>.
-  GBool match(GooString *encodingNameA);
+  bool match(const GooString *encodingNameA) const;
 
   // Map Unicode to the target encoding.  Fills in <buf> with the
   // output and returns the number of bytes used.  Output will be
@@ -106,7 +101,7 @@ private:
 
   GooString *encodingName;
   UnicodeMapKind kind;
-  GBool unicodeOut;
+  bool unicodeOut;
   union {
     UnicodeMapRange *ranges;	// (user, resident)
     UnicodeMapFunc func;	// (func)

@@ -228,7 +228,7 @@ int DCTStream::getChar() {
   return c;
 }
 
-int DCTStream::getChars(int nChars, Guchar *buffer) {
+int DCTStream::getChars(int nChars, unsigned char *buffer) {
   // Use volatile to prevent the compiler optimizing
   // variables into registers. See setjmp man page.
   volatile int i, c;
@@ -260,6 +260,6 @@ GooString *DCTStream::getPSFilter(int psLevel, const char *indent) {
   return s;
 }
 
-GBool DCTStream::isBinary(GBool last) {
-  return str->isBinary(gTrue);
+bool DCTStream::isBinary(bool last) {
+  return str->isBinary(true);
 }

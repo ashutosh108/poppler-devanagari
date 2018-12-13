@@ -36,22 +36,14 @@
 #ifndef GLOBALPARAMS_H
 #define GLOBALPARAMS_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
 #include <assert.h>
 #include "poppler-config.h"
 #include <stdio.h>
-#include "goo/gtypes.h"
 #include "CharTypes.h"
 #include "UnicodeMap.h"
 #include <unordered_map>
 #include <string>
-
-#ifdef MULTITHREADED
-#include "goo/GooMutex.h"
-#endif
+#include <mutex>
 
 class GooString;
 class GooList;
@@ -106,7 +98,7 @@ class GlobalParams {
 public:
 
   // Initialize the global parameters
-  GlobalParams(const char *customPopplerDataDir = NULL);
+  GlobalParams(const char *customPopplerDataDir = nullptr);
 
   ~GlobalParams();
 
@@ -127,67 +119,59 @@ public:
   // lookups or text extraction with ZapfDingbats fonts.
   Unicode mapNameToUnicodeAll(const char *charName);
 
-  UnicodeMap *getResidentUnicodeMap(GooString *encodingName);
-  FILE *getUnicodeMapFile(GooString *encodingName);
-  FILE *findCMapFile(GooString *collection, GooString *cMapName);
-  FILE *findToUnicodeFile(GooString *name);
-  GooString *findFontFile(GooString *fontName);
-  GooString *findBase14FontFile(GooString *base14Name, GfxFont *font);
+  UnicodeMap *getResidentUnicodeMap(const GooString *encodingName);
+  FILE *getUnicodeMapFile(const GooString *encodingName);
+  FILE *findCMapFile(const GooString *collection, const GooString *cMapName);
+  FILE *findToUnicodeFile(const GooString *name);
+  GooString *findFontFile(const GooString *fontName);
+  GooString *findBase14FontFile(const GooString *base14Name, GfxFont *font);
   GooString *findSystemFontFile(GfxFont *font, SysFontType *type,
-			      int *fontNum, GooString *substituteFontName = NULL, 
-		              GooString *base14Name = NULL);
-  GBool getPSExpandSmaller();
-  GBool getPSShrinkLarger();
+			      int *fontNum, GooString *substituteFontName = nullptr,
+		              const GooString *base14Name = nullptr);
+  bool getPSExpandSmaller();
+  bool getPSShrinkLarger();
   PSLevel getPSLevel();
   GooString *getTextEncodingName();
   EndOfLineKind getTextEOL();
-  GBool getTextPageBreaks();
-  GBool getEnableFreeType();
-  GBool getOverprintPreview() { return overprintPreview; }
-  GBool getPrintCommands();
-  GBool getProfileCommands();
-  GBool getErrQuiet();
+  bool getTextPageBreaks();
+  bool getEnableFreeType();
+  bool getOverprintPreview() { return overprintPreview; }
+  bool getPrintCommands();
+  bool getProfileCommands();
+  bool getErrQuiet();
 
   CharCodeToUnicode *getCIDToUnicode(GooString *collection);
   UnicodeMap *getUnicodeMap(GooString *encodingName);
-  CMap *getCMap(GooString *collection, GooString *cMapName, Stream *stream = NULL);
+  CMap *getCMap(const GooString *collection, GooString *cMapName, Stream *stream = nullptr);
   UnicodeMap *getTextEncoding();
-#ifdef ENABLE_PLUGINS
-  GBool loadPlugin(char *type, char *name);
-#endif
 
   GooList *getEncodingNames();
 
   //----- functions to set parameters
   void addFontFile(GooString *fontName, GooString *path);
-  void setPSExpandSmaller(GBool expand);
-  void setPSShrinkLarger(GBool shrink);
+  void setPSExpandSmaller(bool expand);
+  void setPSShrinkLarger(bool shrink);
   void setPSLevel(PSLevel level);
   void setTextEncoding(char *encodingName);
-  GBool setTextEOL(char *s);
-  void setTextPageBreaks(GBool pageBreaks);
-  GBool setEnableFreeType(char *s);
-  void setOverprintPreview(GBool overprintPreviewA);
-  void setPrintCommands(GBool printCommandsA);
-  void setProfileCommands(GBool profileCommandsA);
-  void setErrQuiet(GBool errQuietA);
+  bool setTextEOL(char *s);
+  void setTextPageBreaks(bool pageBreaks);
+  bool setEnableFreeType(char *s);
+  void setOverprintPreview(bool overprintPreviewA);
+  void setPrintCommands(bool printCommandsA);
+  void setProfileCommands(bool profileCommandsA);
+  void setErrQuiet(bool errQuietA);
 
-  static GBool parseYesNo2(const char *token, GBool *flag);
-
-  //----- security handlers
-
-  void addSecurityHandler(XpdfSecurityHandler *handler);
-  XpdfSecurityHandler *getSecurityHandler(char *name);
+  static bool parseYesNo2(const char *token, bool *flag);
 
 private:
 
-  void parseNameToUnicode(GooString *name);
+  void parseNameToUnicode(const GooString *name);
   UnicodeMap *getUnicodeMap2(GooString *encodingName);
 
   void scanEncodingDirs();
-  void addCIDToUnicode(GooString *collection, GooString *fileName);
-  void addUnicodeMap(GooString *encodingName, GooString *fileName);
-  void addCMapDir(GooString *collection, GooString *dir);
+  void addCIDToUnicode(const GooString *collection, const GooString *fileName);
+  void addUnicodeMap(const GooString *encodingName, const GooString *fileName);
+  void addCMapDir(const GooString *collection, const GooString *dir);
 
   //----- static tables
 
@@ -212,7 +196,7 @@ private:
   // list of CMap dirs, indexed by collection
   std::unordered_multimap<std::string, std::string> cMapDirs;
   GooList *toUnicodeDirs;		// list of ToUnicode CMap dirs [GooString]
-  GBool baseFontsInitialized;
+  bool baseFontsInitialized;
 #ifdef _WIN32
   // windows font substitutes (for CID fonts)
   std::unordered_map<std::string, std::string> substFiles;
@@ -220,36 +204,28 @@ private:
   // font files: font name mapped to path
   std::unordered_map<std::string, std::string> fontFiles;
   SysFontList *sysFonts;	// system fonts
-  GBool psExpandSmaller;	// expand smaller pages to fill paper
-  GBool psShrinkLarger;		// shrink larger pages to fit paper
+  bool psExpandSmaller;	// expand smaller pages to fill paper
+  bool psShrinkLarger;		// shrink larger pages to fit paper
   PSLevel psLevel;		// PostScript level to generate
   GooString *textEncoding;	// encoding (unicodeMap) to use for text
 				//   output
   EndOfLineKind textEOL;	// type of EOL marker to use for text
 				//   output
-  GBool textPageBreaks;		// insert end-of-page markers?
-  GBool enableFreeType;		// FreeType enable flag
-  GBool overprintPreview;	// enable overprint preview
-  GBool printCommands;		// print the drawing commands
-  GBool profileCommands;	// profile the drawing commands
-  GBool errQuiet;		// suppress error messages?
+  bool textPageBreaks;		// insert end-of-page markers?
+  bool enableFreeType;		// FreeType enable flag
+  bool overprintPreview;	// enable overprint preview
+  bool printCommands;		// print the drawing commands
+  bool profileCommands;	// profile the drawing commands
+  bool errQuiet;		// suppress error messages?
 
   CharCodeToUnicodeCache *cidToUnicodeCache;
   CharCodeToUnicodeCache *unicodeToUnicodeCache;
   UnicodeMapCache *unicodeMapCache;
   CMapCache *cMapCache;
   
-#ifdef ENABLE_PLUGINS
-  GooList *plugins;		// list of plugins [Plugin]
-  GooList *securityHandlers;	// list of loaded security handlers
-				//   [XpdfSecurityHandler]
-#endif
-
-#ifdef MULTITHREADED
-  GooMutex mutex;
-  GooMutex unicodeMapCacheMutex;
-  GooMutex cMapCacheMutex;
-#endif
+  mutable std::recursive_mutex mutex;
+  mutable std::recursive_mutex unicodeMapCacheMutex;
+  mutable std::recursive_mutex cMapCacheMutex;
 
   const char *popplerDataDir;
 };

@@ -24,17 +24,23 @@ CHECK_FILE_OFFSET_BITS()
 
 include(GNUInstallDirs)
 
+set(ENABLE_FUZZER FALSE)
+
 find_package (ECM 1.6.0 QUIET NO_MODULE)
 if (ECM_FOUND)
     include("${ECM_MODULE_DIR}/ECMEnableSanitizers.cmake")
+
+    if(ECM_ENABLE_SANITIZERS MATCHES fuzzer)
+        set(ENABLE_FUZZER TRUE)
+    endif()
 endif()
 
 set(POPPLER_MAJOR_VERSION "0")
-set(POPPLER_MINOR_VERSION "67")
+set(POPPLER_MINOR_VERSION "72")
 set(POPPLER_MICRO_VERSION "0")
 set(POPPLER_VERSION "${POPPLER_MAJOR_VERSION}.${POPPLER_MINOR_VERSION}.${POPPLER_MICRO_VERSION}")
 
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
 # command line switches
@@ -107,10 +113,6 @@ elseif(font_configuration STREQUAL "generic")
   message(STATUS "no fontconfig or win32 specific code")
 else()
   message(FATAL_ERROR "Invalid font configuration setting: ${FONT_CONFIGURATION}")
-endif()
-
-if(CMAKE_USE_PTHREADS_INIT OR WIN32)
-  set(MULTITHREADED ON)
 endif()
 
 # Enable these unconditionally.
@@ -201,9 +203,9 @@ if(ENABLE_ZLIB_UNCOMPRESS AND NOT ENABLE_ZLIB)
 endif()
 set(WITH_OPENJPEG FALSE)
 if(ENABLE_LIBOPENJPEG STREQUAL "openjpeg2")
-  find_package(LIBOPENJPEG2)
-  set(WITH_OPENJPEG ${LIBOPENJPEG2_FOUND})
-  if(NOT LIBOPENJPEG2_FOUND)
+  find_package(OpenJPEG)
+  set(WITH_OPENJPEG ${OpenJPEG_FOUND})
+  if(NOT OpenJPEG_FOUND OR OPENJPEG_MAJOR_VERSION VERSION_LESS 2)
     message(FATAL_ERROR "Install libopenjpeg2 before trying to build poppler. You can also decide to use the internal unmaintained JPX decoder or none at all.")
   endif()
   set(HAVE_JPX_DECODER ON)
@@ -276,8 +278,8 @@ if(TIFF_FOUND)
   include_directories(${TIFF_INCLUDE_DIR})
   set(ENABLE_LIBTIFF ON)
 endif()
-if(LIBOPENJPEG2_FOUND)
-  include_directories(${LIBOPENJPEG2_INCLUDE_DIRS})
+if(OpenJPEG_FOUND)
+  include_directories(${OPENJPEG_INCLUDE_DIRS})
 endif()
 if(LCMS2_FOUND)
   include_directories(${LCMS2_INCLUDE_DIR})
@@ -307,19 +309,14 @@ else()
   set(CMAKE_CXX_FLAGS "${DEFAULT_COMPILE_WARNINGS} ${CMAKE_CXX_FLAGS}")
 endif()
 
-
 include(ConfigureChecks.cmake)
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 configure_file(poppler/poppler-config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/poppler/poppler-config.h)
 
-
 set(poppler_SRCS
   goo/gfile.cc
-  goo/gmempp.cc
-  goo/GooList.cc
   goo/GooTimer.cc
   goo/GooString.cc
-  goo/gmem.cc
   goo/FixedPoint.cc
   goo/NetPBMWriter.cc
   goo/PNGWriter.cc
@@ -376,7 +373,6 @@ set(poppler_SRCS
   poppler/PDFDoc.cc
   poppler/PDFDocEncoding.cc
   poppler/PDFDocFactory.cc
-  poppler/PopplerCache.cc
   poppler/ProfileData.cc
   poppler/PreScanOutputDev.cc
   poppler/PSTokenizer.cc
@@ -397,7 +393,6 @@ set(poppler_SRCS
   poppler/StdinPDFDocBuilder.cc
   poppler/Sound.cc
   poppler/ViewerPreferences.cc
-  poppler/XpdfPluginAPI.cc
   poppler/Movie.cc
   poppler/Rendition.cc
 )
@@ -457,11 +452,11 @@ if (ENABLE_NSS3)
   )
   set(poppler_LIBS ${poppler_LIBS} ${NSS3_LIBRARIES})
 endif()
-if (LIBOPENJPEG2_FOUND)
+if (OpenJPEG_FOUND)
   set(poppler_SRCS ${poppler_SRCS}
     poppler/JPEG2000Stream.cc
   )
-  set(poppler_LIBS ${poppler_LIBS} ${LIBOPENJPEG2_LIBRARIES})
+  set(poppler_LIBS ${poppler_LIBS} openjp2)
 else ()
   set(poppler_SRCS ${poppler_SRCS}
     poppler/JPXStream.cc
@@ -485,12 +480,11 @@ endif()
 
 if(MSVC)
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-set(CMAKE_CXX_FLAGS "/Zc:wchar_t- ${CMAKE_CXX_FLAGS}")
 add_library(poppler STATIC ${poppler_SRCS})
 else()
 add_library(poppler ${poppler_SRCS})
 endif()
-set_target_properties(poppler PROPERTIES VERSION 78.0.0 SOVERSION 78)
+set_target_properties(poppler PROPERTIES VERSION 83.0.0 SOVERSION 83)
 if(MINGW)
     get_target_property(POPPLER_SOVERSION poppler SOVERSION)
     set_target_properties(poppler PROPERTIES SUFFIX "-${POPPLER_SOVERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
@@ -574,20 +568,19 @@ if(ENABLE_XPDF_HEADERS)
     poppler/StdinCachedFile.h
     poppler/StdinPDFDocBuilder.h
     poppler/UTF.h
-    poppler/XpdfPluginAPI.h
     poppler/Sound.h
     ${CMAKE_CURRENT_BINARY_DIR}/poppler/poppler-config.h
     DESTINATION include/poppler)
   install(FILES
     goo/GooList.h
     goo/GooTimer.h
-    goo/GooMutex.h
     goo/GooString.h
-    goo/gtypes.h
     goo/gmem.h
+    goo/gdir.h
     goo/gfile.h
     goo/FixedPoint.h
     goo/ImgWriter.h
+    goo/GooCheckedOps.h
     goo/GooLikely.h
     goo/gstrtod.h
     goo/grandom.h
@@ -621,7 +614,7 @@ if(ENABLE_XPDF_HEADERS)
       poppler/CurlPDFDocBuilder.h
       DESTINATION include/poppler)
   endif()
-  if(LIBOPENJPEG2_FOUND)
+  if(OpenJPEG_FOUND)
     install(FILES
       poppler/JPEG2000Stream.h
       DESTINATION include/poppler)
@@ -727,6 +720,7 @@ show_end_message_yesno("use curl" ENABLE_LIBCURL)
 show_end_message_yesno("use libopenjpeg2" WITH_OPENJPEG)
 show_end_message_yesno("use lcms2" USE_CMS)
 show_end_message_yesno("command line utils" ENABLE_UTILS)
+show_end_message_yesno("fuzz target" ENABLE_FUZZER)
 show_end_message("test data dir" ${TESTDATADIR})
 
 if(NOT ENABLE_SPLASH AND NOT CAIRO_FOUND)

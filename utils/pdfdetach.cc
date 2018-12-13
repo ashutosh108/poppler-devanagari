@@ -17,6 +17,7 @@
 // Copyright (C) 2013 Yury G. Kudryashov <urkud.urkud@gmail.com>
 // Copyright (C) 2014, 2017 Adrian Johnson <ajohnson@redneon.com>
 // Copyright (C) 2018 Albert Astals Cid <aacid@kde.org>
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -26,7 +27,6 @@
 #include "config.h"
 #include <poppler-config.h>
 #include <stdio.h>
-#include "goo/gtypes.h"
 #include "goo/gmem.h"
 #include "goo/GooList.h"
 #include "parseargs.h"
@@ -43,15 +43,15 @@
 #include "Error.h"
 #include "Win32Console.h"
 
-static GBool doList = gFalse;
+static bool doList = false;
 static int saveNum = 0;
-static GBool saveAll = gFalse;
+static bool saveAll = false;
 static char savePath[1024] = "";
 static char textEncName[128] = "";
 static char ownerPassword[33] = "\001";
 static char userPassword[33] = "\001";
-static GBool printVersion = gFalse;
-static GBool printHelp = gFalse;
+static bool printVersion = false;
+static bool printHelp = false;
 
 static ArgDesc argDesc[] = {
   {"-list",   argFlag,     &doList,        0,
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
   char uBuf[8];
   char path[1024];
   char *p;
-  GBool ok;
+  bool ok;
   int exitCode;
   GooList *embeddedFiles = nullptr;
   int nFiles, nPages, n, i, j;
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
   Annot *annot;
   const GooString *s1;
   Unicode u;
-  GBool isUnicode;
+  bool isUnicode;
 
   Win32Console win32Console(&argc, &argv);
   exitCode = 99;
@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
   if ((doList ? 1 : 0) +
       ((saveNum != 0) ? 1 : 0) +
       (saveAll ? 1 : 0) != 1) {
-    ok = gFalse;
+    ok = false;
   }
   if (!ok || argc != 2 || printVersion || printHelp) {
     fprintf(stderr, "pdfdetach version %s\n", PACKAGE_VERSION);
@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
 
   embeddedFiles = new GooList();
   for (i = 0; i < doc->getCatalog()->numEmbeddedFiles(); ++i)
-    embeddedFiles->append(doc->getCatalog()->embeddedFile(i));
+    embeddedFiles->push_back(doc->getCatalog()->embeddedFile(i));
 
   nPages = doc->getCatalog()->getNumPages();
   for (i = 0; i < nPages; ++i) {
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
       annot = annots->getAnnot(j);
       if (annot->getType() != Annot::typeFileAttachment)
         continue;
-      embeddedFiles->append(new FileSpec(static_cast<AnnotFileAttachment *>(annot)->getFile()));
+      embeddedFiles->push_back(new FileSpec(static_cast<AnnotFileAttachment *>(annot)->getFile()));
     }
   }
 
@@ -190,14 +190,18 @@ int main(int argc, char *argv[]) {
       fileSpec = static_cast<FileSpec *>(embeddedFiles->get(i));
       printf("%d: ", i+1);
       s1 = fileSpec->getFileName();
-      if ((s1->getChar(0) & 0xff) == 0xfe && (s1->getChar(1) & 0xff) == 0xff) {
-        isUnicode = gTrue;
+      if (!s1) {
+	exitCode = 3;
+	goto err2;
+      }
+      if (s1->hasUnicodeMarker()) {
+        isUnicode = true;
         j = 2;
       } else {
-        isUnicode = gFalse;
+        isUnicode = false;
         j = 0;
       }
-      while (j < fileSpec->getFileName()->getLength()) {
+      while (j < s1->getLength()) {
         if (isUnicode) {
           u = ((s1->getChar(j) & 0xff) << 8) | (s1->getChar(j+1) & 0xff);
           j += 2;
@@ -227,14 +231,18 @@ int main(int argc, char *argv[]) {
 	p = path;
       }
       s1 = fileSpec->getFileName();
-      if ((s1->getChar(0) & 0xff) == 0xfe && (s1->getChar(1) & 0xff) == 0xff) {
-        isUnicode = gTrue;
+      if (!s1) {
+	exitCode = 3;
+	goto err2;
+      }
+      if (s1->hasUnicodeMarker()) {
+        isUnicode = true;
         j = 2;
       } else {
-        isUnicode = gFalse;
+        isUnicode = false;
         j = 0;
       }
-      while (j < fileSpec->getFileName()->getLength()) {
+      while (j < s1->getLength()) {
         if (isUnicode) {
           u = ((s1->getChar(j) & 0xff) << 8) | (s1->getChar(j+1) & 0xff);
           j += 2;
@@ -250,7 +258,12 @@ int main(int argc, char *argv[]) {
       }
       *p = '\0';
 
-      if (!fileSpec->getEmbeddedFile()->save(path)) {
+      auto *embFile = fileSpec->getEmbeddedFile();
+      if (!embFile || !embFile->isOk()) {
+	exitCode = 3;
+	goto err2;
+      }
+      if (!embFile->save(path)) {
 	error(errIO, -1, "Error saving embedded file as '{0:s}'", p);
 	exitCode = 2;
 	goto err2;
@@ -270,14 +283,18 @@ int main(int argc, char *argv[]) {
     } else {
       p = path;
       s1 = fileSpec->getFileName();
-      if ((s1->getChar(0) & 0xff) == 0xfe && (s1->getChar(1) & 0xff) == 0xff) {
-        isUnicode = gTrue;
+      if (!s1) {
+	exitCode = 3;
+	goto err2;
+      }
+      if (s1->hasUnicodeMarker()) {
+        isUnicode = true;
         j = 2;
       } else {
-        isUnicode = gFalse;
+        isUnicode = false;
         j = 0;
       }
-      while (j < fileSpec->getFileName()->getLength()) {
+      while (j < s1->getLength()) {
         if (isUnicode) {
           u = ((s1->getChar(j) & 0xff) << 8) | (s1->getChar(j+1) & 0xff);
           j += 2;
@@ -295,7 +312,12 @@ int main(int argc, char *argv[]) {
       p = path;
     }
 
-    if (!fileSpec->getEmbeddedFile()->save(p)) {
+    auto *embFile = fileSpec->getEmbeddedFile();
+    if (!embFile || !embFile->isOk()) {
+      exitCode = 3;
+      goto err2;
+    }
+    if (!embFile->save(p)) {
       error(errIO, -1, "Error saving embedded file as '{0:s}'", p);
       exitCode = 2;
       goto err2;
@@ -307,16 +329,12 @@ int main(int argc, char *argv[]) {
   // clean up
  err2:
   if (embeddedFiles)
-    deleteGooList(embeddedFiles, FileSpec);
+    deleteGooList<FileSpec>(embeddedFiles);
   uMap->decRefCnt();
   delete doc;
  err1:
   delete globalParams;
  err0:
-
-  // check for memory leaks
-  Object::memCheck(stderr);
-  gMemReport(stderr);
 
   return exitCode;
 }

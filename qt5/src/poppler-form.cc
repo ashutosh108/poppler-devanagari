@@ -7,6 +7,7 @@
  * Copyright (C) 2017, Hans-Ulrich Jüttner <huj@froreich-bioscientia.de>
  * Copyright (C) 2018, Andre Heinecke <aheinecke@intevation.de>
  * Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+ * Copyright (C) 2018 Chinmoy Ranjan Pradhan <chinmoyrp65@protonmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,8 +76,8 @@ FormField::FormField(FormFieldData &dd)
   double left, top, right, bottom;
   m_formData->fm->getRect(&left, &bottom, &right, &top);
   // build a normalized transform matrix for this page at 100% scale
-  GfxState gfxState( 72.0, 72.0, m_formData->page->getCropBox(), rotation, gTrue );
-  double * gfxCTM = gfxState.getCTM();
+  GfxState gfxState( 72.0, 72.0, m_formData->page->getCropBox(), rotation, true );
+  const double * gfxCTM = gfxState.getCTM();
   double MTX[6];
   double pageWidth = m_formData->page->getCropWidth();
   double pageHeight = m_formData->page->getCropHeight();
@@ -116,7 +117,7 @@ QString FormField::name() const
   QString name;
   if (const GooString *goo = m_formData->fm->getPartialName())
   {
-    name = QString::fromLatin1(goo->getCString());
+    name = QString::fromLatin1(goo->c_str());
   }
   return name;
 }
@@ -143,7 +144,7 @@ QString FormField::uiName() const
   QString name;
   if (const GooString *goo = m_formData->fm->getAlternateUiName())
   {
-    name = QString::fromLatin1(goo->getCString());
+    name = QString::fromLatin1(goo->c_str());
   }
   return name;
 }
@@ -165,7 +166,7 @@ bool FormField::isVisible() const
 
 void FormField::setVisible(bool value)
 {
-  Guint flags = m_formData->fm->getWidgetAnnotation()->getFlags();
+  unsigned int flags = m_formData->fm->getWidgetAnnotation()->getFlags();
   if (value) {
     flags &= ~Annot::flagHidden;
   } else {
@@ -290,7 +291,7 @@ bool FormFieldButton::state() const
 void FormFieldButton::setState( bool state )
 {
   FormWidgetButton* fwb = static_cast<FormWidgetButton*>(m_formData->fm);
-  fwb->setState((GBool)state);
+  fwb->setState((bool)state);
 }
 
 QList<int> FormFieldButton::siblings() const
@@ -495,13 +496,16 @@ bool FormFieldChoice::canBeSpellChecked() const
 }
 
 
-struct SignatureValidationInfoPrivate {
+class SignatureValidationInfoPrivate {
+public:
 	SignatureValidationInfo::SignatureStatus signature_status;
 	SignatureValidationInfo::CertificateStatus certificate_status;
 
 	QByteArray signature;
 	QString signer_name;
 	QString signer_subject_dn;
+	QString location;
+	QString reason;
 	int hash_algorithm;
 	time_t signing_time;
 	QList<qint64> range_bounds;
@@ -545,6 +549,18 @@ QString SignatureValidationInfo::signerSubjectDN() const
 {
   Q_D(const SignatureValidationInfo);
   return d->signer_subject_dn;
+}
+
+QString SignatureValidationInfo::location() const
+{
+  Q_D(const SignatureValidationInfo);
+  return d->location;
+}
+
+QString SignatureValidationInfo::reason() const
+{
+  Q_D(const SignatureValidationInfo);
+  return d->reason;
 }
 
 SignatureValidationInfo::HashAlgorithm SignatureValidationInfo::hashAlgorithm() const
@@ -715,6 +731,8 @@ SignatureValidationInfo FormFieldSignature::validate(int opt, const QDateTime& v
   priv->signer_name = si->getSignerName();
   priv->signer_subject_dn = si->getSubjectDN();
   priv->hash_algorithm = si->getHashAlgorithm();
+  priv->location = si->getLocation();
+  priv->reason = si->getReason();
 
   priv->signing_time = si->getSigningTime();
   const std::vector<Goffset> ranges = fws->getSignedRangeBounds();
@@ -728,7 +746,7 @@ SignatureValidationInfo FormFieldSignature::validate(int opt, const QDateTime& v
   GooString* checkedSignature = fws->getCheckedSignature(&priv->docLength);
   if (priv->range_bounds.size() == 4 && checkedSignature)
   {
-    priv->signature = QByteArray::fromHex(checkedSignature->getCString());
+    priv->signature = QByteArray::fromHex(checkedSignature->c_str());
   }
   delete checkedSignature;
 

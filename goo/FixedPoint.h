@@ -30,13 +30,8 @@
 
 #ifdef USE_FIXEDPOINT
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
-#include "gtypes.h"
 
 #define fixptShift 16
 #define fixptMaskL ((1 << fixptShift) - 1)
@@ -158,11 +153,11 @@ public:
 
   // Compute *result = x/y; return false if there is an underflow or
   // overflow.
-  static GBool divCheck(FixedPoint x, FixedPoint y, FixedPoint *result);
+  static bool divCheck(FixedPoint x, FixedPoint y, FixedPoint *result);
 
   // Compute abs(m11*m22 - m12*m21) >= epsilon, handling the case
   // where the multiplications overflow.
-  static GBool checkDet(FixedPoint m11, FixedPoint m12,
+  static bool checkDet(FixedPoint m11, FixedPoint m12,
                        FixedPoint m21, FixedPoint m22,
                        FixedPoint epsilon);
 

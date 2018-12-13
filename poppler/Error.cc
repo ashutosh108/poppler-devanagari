@@ -14,7 +14,7 @@
 // under GPL version 2 or later
 //
 // Copyright (C) 2005, 2007 Jeff Muizelaar <jeff@infidigm.net>
-// Copyright (C) 2005 Albert Astals Cid <aacid@kde.org>
+// Copyright (C) 2005, 2018 Albert Astals Cid <aacid@kde.org>
 // Copyright (C) 2007 Krzysztof Kowalczyk <kkowalczyk@gmail.com>
 // Copyright (C) 2012 Marek Kasik <mkasik@redhat.com>
 // Copyright (C) 2013, 2017 Adrian Johnson <ajohnson@redneon.com>
@@ -26,10 +26,6 @@
 
 #include <config.h>
 #include <poppler-config.h>
-
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
 
 #include <stdio.h>
 #include <stddef.h>
@@ -50,11 +46,11 @@ static const char *errorCategoryNames[] = {
 };
 
 static void (*errorCbk)(void *data, ErrorCategory category,
-			Goffset pos, char *msg) = nullptr;
+			Goffset pos, const char *msg) = nullptr;
 static void *errorCbkData = nullptr;
 
 void setErrorCallback(void (*cbk)(void *data, ErrorCategory category,
-				  Goffset pos, char *msg),
+				  Goffset pos, const char *msg),
 		      void *data) {
   errorCbk = cbk;
   errorCbkData = data;
@@ -83,14 +79,14 @@ void CDECL error(ErrorCategory category, Goffset pos, const char *msg, ...) {
   }
 
   if (errorCbk) {
-    (*errorCbk)(errorCbkData, category, pos, sanitized->getCString());
+    (*errorCbk)(errorCbkData, category, pos, sanitized->c_str());
   } else {
     if (pos >= 0) {
       fprintf(stderr, "%s (%lld): %s\n",
-	      errorCategoryNames[category], (long long)pos, sanitized->getCString());
+	      errorCategoryNames[category], (long long)pos, sanitized->c_str());
     } else {
       fprintf(stderr, "%s: %s\n",
-	      errorCategoryNames[category], sanitized->getCString());
+	      errorCategoryNames[category], sanitized->c_str());
     }
     fflush(stderr);
   }

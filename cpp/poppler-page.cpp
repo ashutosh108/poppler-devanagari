@@ -1,10 +1,11 @@
 /*
  * Copyright (C) 2009-2010, Pino Toscano <pino@kde.org>
- * Copyright (C) 2017, Albert Astals Cid <aacid@kde.org>
+ * Copyright (C) 2017, 2018, Albert Astals Cid <aacid@kde.org>
  * Copyright (C) 2017, Jason Alan Palmer <jalanpalmer@gmail.com>
  * Copyright (C) 2018, Suzuki Toshiya <mpsuzuki@hiroshima-u.ac.jp>
  * Copyright (C) 2018, Adam Reichold <adam.reichold@t-online.de>
  * Copyright (C) 2018, Zsombor Hollay-Horvath <hollay.horvath@gmail.com>
+ * Copyright (C) 2018, Aleksey Nikolaev <nae202@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,7 +131,7 @@ double page::duration() const
  */
 rectf page::page_rect(page_box_enum box) const
 {
-    PDFRectangle *r = nullptr;
+    const PDFRectangle *r = nullptr;
     switch (box) {
     case media_box:
         r = d->page->getMediaBox();
@@ -205,7 +206,7 @@ bool page::search(const ustring &text, rectf &r, search_direction_enum direction
         u[i] = text[i];
     }
 
-    const GBool sCase = case_sensitivity == case_sensitive ? gTrue : gFalse;
+    const bool sCase = case_sensitivity == case_sensitive;
     const int rotation_value = (int)rotation * 90;
 
     bool found = false;
@@ -214,24 +215,24 @@ bool page::search(const ustring &text, rectf &r, search_direction_enum direction
     double rect_right = r.right();
     double rect_bottom = r.bottom();
 
-    TextOutputDev td(nullptr, gTrue, 0, gFalse, gFalse);
+    TextOutputDev td(nullptr, true, 0, false, false);
     d->doc->doc->displayPage(&td, d->index + 1, 72, 72, rotation_value, false, true, false);
     TextPage *text_page = td.takeText();
 
     switch (direction) {
     case search_from_top:
         found = text_page->findText(&u[0], len,
-                    gTrue, gTrue, gFalse, gFalse, sCase, gFalse, gFalse,
+                    true, true, false, false, sCase, false, false,
                     &rect_left, &rect_top, &rect_right, &rect_bottom);
         break;
     case search_next_result:
         found = text_page->findText(&u[0], len,
-                    gFalse, gTrue, gTrue, gFalse, sCase, gFalse, gFalse,
+                    false, true, true, false, sCase, false, false,
                     &rect_left, &rect_top, &rect_right, &rect_bottom);
         break;
     case search_previous_result:
         found = text_page->findText(&u[0], len,
-                    gFalse, gTrue, gTrue, gFalse, sCase, gTrue, gFalse,
+                    false, true, true, false, sCase, true, false,
                     &rect_left, &rect_top, &rect_right, &rect_bottom);
         break;
     }
@@ -272,21 +273,21 @@ ustring page::text(const rectf &r) const
 ustring page::text(const rectf &r, text_layout_enum layout_mode) const
 {
     std::unique_ptr<GooString> s;
-    const GBool use_raw_order = (layout_mode == raw_order_layout);
-    TextOutputDev td(nullptr, gFalse, 0, use_raw_order, gFalse);
+    const bool use_raw_order = (layout_mode == raw_order_layout);
+    TextOutputDev td(nullptr, false, 0, use_raw_order, false);
     d->doc->doc->displayPage(&td, d->index + 1, 72, 72, 0, false, true, false);
     if (r.is_empty()) {
-        PDFRectangle *rect = d->page->getCropBox();
+        PDFRectangle rect = *d->page->getCropBox();
         const int rotate = d->page->getRotate();
         if (rotate == 90 || rotate == 270) {
-            std::swap(rect->x1, rect->y1);
-            std::swap(rect->x2, rect->y2);
+            std::swap(rect.x1, rect.y1);
+            std::swap(rect.x2, rect.y2);
         }
-        s.reset(td.getText(rect->x1, rect->y1, rect->x2, rect->y2));
+        s.reset(td.getText(rect.x1, rect.y1, rect.x2, rect.y2));
     } else {
         s.reset(td.getText(r.left(), r.top(), r.right(), r.bottom()));
     }
-    return ustring::from_utf8(s->getCString());
+    return ustring::from_utf8(s->c_str());
 }
 
 /*
@@ -295,6 +296,9 @@ ustring page::text(const rectf &r, text_layout_enum layout_mode) const
 text_box_data::~text_box_data() = default;
 
 text_box::~text_box() = default;
+
+text_box& text_box::operator=(text_box&& a) = default;
+text_box::text_box(text_box&& a) = default;
 
 text_box::text_box(text_box_data *data) : m_data{data}
 {
@@ -332,13 +336,13 @@ std::vector<text_box> page::text_list() const
     std::vector<text_box>  output_list;
 
     /* config values are same with Qt5 Page::TextList() */
-    std::unique_ptr<TextOutputDev> output_dev{
-        new TextOutputDev(nullptr,    /* char* fileName */
-                          gFalse,  /* GBool physLayoutA */
-                          0,       /* double fixedPitchA */
-                          gFalse,  /* GBool rawOrderA */
-                          gFalse)  /* GBool append */
-    };
+    auto output_dev = std::make_unique<TextOutputDev>(
+	nullptr,    /* char* fileName */
+	false,  /* bool physLayoutA */
+	0,       /* double fixedPitchA */
+	false,  /* bool rawOrderA */
+	false  /* bool append */
+    );
 
     /*
      * config values are same with Qt5 Page::TextList(),
@@ -348,11 +352,11 @@ std::vector<text_box> page::text_list() const
     d->doc->doc->displayPageSlice(output_dev.get(),
                                   d->index + 1,           /* page */
                                   72, 72, 0,              /* hDPI, vDPI, rot */
-                                  gFalse, gFalse, gFalse, /* useMediaBox, crop, printing */
+                                  false, false, false,    /* useMediaBox, crop, printing */
                                   -1, -1, -1, -1,         /* sliceX, sliceY, sliceW, sliceH */
                                   nullptr, nullptr,       /* abortCheckCbk(), abortCheckCbkData */
                                   nullptr, nullptr,       /* annotDisplayDecideCbk(), annotDisplayDecideCbkData */
-                                  gTrue);                 /* copyXRef */
+                                  true);                  /* copyXRef */
 
     if (std::unique_ptr< TextWordList > word_list{output_dev->makeWordList()}) {
 
@@ -361,7 +365,7 @@ std::vector<text_box> page::text_list() const
             TextWord *word = word_list->get(i);
 
             std::unique_ptr<GooString> gooWord{word->getText()};
-            ustring ustr = detail::unicode_GooString_to_ustring(gooWord.get());
+            ustring ustr = ustring::from_utf8(gooWord->c_str());
 
             double xMin, yMin, xMax, yMax;
             word->getBBox(&xMin, &yMin, &xMax, &yMax);
@@ -371,7 +375,7 @@ std::vector<text_box> page::text_list() const
                 {xMin, yMin, xMax-xMin, yMax-yMin},
                 word->getRotation(),
                 {},
-                word->hasSpaceAfter() == gTrue
+                word->hasSpaceAfter() == true
             }};
 
             tb.m_data->char_bboxes.reserve(word->getLength());

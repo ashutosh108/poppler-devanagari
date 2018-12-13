@@ -40,7 +40,7 @@ void JSInfo::printJS(const GooString *js) {
   char buf[8];
   int i, n, len;
 
-  if (!js || !js->getCString())
+  if (!js || !js->c_str())
     return;
 
   len = TextStringToUCS4(js, &u);
@@ -56,11 +56,11 @@ void JSInfo::scanLinkAction(LinkAction *link, const char *action, bool deleteLin
     return;
 
   if (link->getKind() == actionJavaScript) {
-    hasJS = gTrue;
+    hasJS = true;
     if (print) {
       LinkJavaScript *linkjs = static_cast<LinkJavaScript *>(link);
       const GooString *s = linkjs->getScript();
-      if (s && s->getCString()) {
+      if (s && s->c_str()) {
 	fprintf(file, "%s:\n", action);
 	printJS(s);
 	fputs("\n\n", file);
@@ -71,10 +71,10 @@ void JSInfo::scanLinkAction(LinkAction *link, const char *action, bool deleteLin
   if (link->getKind() == actionRendition) {
     LinkRendition *linkr = static_cast<LinkRendition *>(link);
     if (linkr->getScript()) {
-      hasJS = gTrue;
+      hasJS = true;
       if (print) {
         const GooString *s = linkr->getScript();
-        if (s && s->getCString()) {
+        if (s && s->c_str()) {
           fprintf(file, "%s (Rendition):\n", action);
           printJS(s);
           fputs("\n\n", file);
@@ -87,13 +87,13 @@ void JSInfo::scanLinkAction(LinkAction *link, const char *action, bool deleteLin
 }
 
 void JSInfo::scanJS(int nPages) {
-  print = gFalse;
+  print = false;
   file = nullptr;
   scan(nPages);
 }
 
 void JSInfo::scanJS(int nPages, FILE *fout, UnicodeMap *uMap) {
-  print = gTrue;
+  print = true;
   file = fout;
   uniMap = uMap;
   scan(nPages);
@@ -104,15 +104,15 @@ void JSInfo::scan(int nPages) {
   Annots *annots;
   int lastPage;
 
-  hasJS = gFalse;
+  hasJS = false;
 
   // Names
   int numNames = doc->getCatalog()->numJS();
   if (numNames > 0) {
-    hasJS = gTrue;
+    hasJS = true;
     if (print) {
       for (int i = 0; i < numNames; i++) {
-	fprintf(file, "Name Dictionary \"%s\":\n", doc->getCatalog()->getJSName(i)->getCString());
+	fprintf(file, "Name Dictionary \"%s\":\n", doc->getCatalog()->getJSName(i)->c_str());
 	GooString *js = doc->getCatalog()->getJS(i);
 	printJS(js);
 	delete js;
@@ -235,6 +235,6 @@ void JSInfo::scan(int nPages) {
   currentPage = lastPage;
 }
 
-GBool JSInfo::containsJS() {
+bool JSInfo::containsJS() {
   return hasJS;
 }

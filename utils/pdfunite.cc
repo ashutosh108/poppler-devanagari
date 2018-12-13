@@ -12,6 +12,7 @@
 // Copyright (C) 2013 Hib Eris <hib@hiberis.nl>
 // Copyright (C) 2015 Arthur Stavisky <vovodroid@gmail.com>
 // Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 //========================================================================
 
@@ -22,8 +23,8 @@
 #include <poppler-config.h>
 #include <vector>
 
-static GBool printVersion = gFalse;
-static GBool printHelp = gFalse;
+static bool printVersion = false;
+static bool printHelp = false;
 
 static const ArgDesc argDesc[] = {
   {"-v", argFlag, &printVersion, 0,
@@ -54,7 +55,7 @@ static void doMergeNameTree(PDFDoc *doc, XRef *srcXRef, XRef *countRef, int oldR
           Object mvalue = mergeNameArray.arrayGetNF(j + 1);
           if (mkey.isString() && mvalue.isRef()) {
             if (mkey.getString()->cmp(key.getString()) < 0) {
-              newNameArray->add(Object(new GooString(mkey.getString()->getCString())));
+              newNameArray->add(Object(new GooString(mkey.getString()->c_str())));
               newNameArray->add(Object(mvalue.getRef().num + numOffset, mvalue.getRef().gen));
               j += 2;
             } else if (mkey.getString()->cmp(key.getString()) == 0) {
@@ -66,7 +67,7 @@ static void doMergeNameTree(PDFDoc *doc, XRef *srcXRef, XRef *countRef, int oldR
             j += 2;
           }
         }
-        newNameArray->add(Object(new GooString(key.getString()->getCString())));
+        newNameArray->add(Object(new GooString(key.getString()->c_str())));
         newNameArray->add(Object(value.getRef().num, value.getRef().gen));
       }
     }
@@ -74,7 +75,7 @@ static void doMergeNameTree(PDFDoc *doc, XRef *srcXRef, XRef *countRef, int oldR
       Object mkey = mergeNameArray.arrayGetNF(j);
       Object mvalue = mergeNameArray.arrayGetNF(j + 1);
       if (mkey.isString() && mvalue.isRef()) {
-        newNameArray->add(Object(new GooString(mkey.getString()->getCString())));
+        newNameArray->add(Object(new GooString(mkey.getString()->c_str())));
         newNameArray->add(Object(mvalue.getRef().num + numOffset, mvalue.getRef().gen));
       }
       j += 2;
@@ -87,11 +88,11 @@ static void doMergeNameTree(PDFDoc *doc, XRef *srcXRef, XRef *countRef, int oldR
       Object key = mergeNameArray.arrayGetNF(i);
       Object value = mergeNameArray.arrayGetNF(i + 1);
       if (key.isString() && value.isRef()) {
-        newNameArray->add(Object(new GooString(key.getString()->getCString())));
+        newNameArray->add(Object(new GooString(key.getString()->c_str())));
         newNameArray->add(Object(value.getRef().num + numOffset, value.getRef().gen));
       }
     }
-    srcNameTree->add(copyString("Names"), Object(newNameArray));
+    srcNameTree->add("Names", Object(newNameArray));
     doc->markPageObjects(mergeNameTree, srcXRef, countRef, numOffset, oldRefNum, newRefNum);
   }
 }
@@ -106,7 +107,7 @@ static void doMergeNameDict(PDFDoc *doc, XRef *srcXRef, XRef *countRef, int oldR
     } else if (srcNameTree.isNull() && mergeNameTree.isDict()) {
       Object newNameTree(new Dict(srcXRef));
       doMergeNameTree(doc, srcXRef, countRef, oldRefNum, newRefNum, newNameTree.getDict(), mergeNameTree.getDict(), numOffset);
-      srcNameDict->add(copyString(key), std::move(newNameTree));
+      srcNameDict->add(key, std::move(newNameTree));
     }
   }
 }
@@ -130,9 +131,9 @@ int main (int argc, char *argv[])
 ///////////////////////////////////////////////////////////////////////////
 {
   int objectsCount = 0;
-  Guint numOffset = 0;
+  unsigned int numOffset = 0;
   std::vector<Object> pages;
-  std::vector<Guint> offsets;
+  std::vector<unsigned int> offsets;
   XRef *yRef, *countRef;
   FILE *f;
   OutStream *outStr;
@@ -145,7 +146,7 @@ int main (int argc, char *argv[])
   int exitCode;
 
   exitCode = 99;
-  const GBool ok = parseArgs (argDesc, &argc, argv);
+  const bool ok = parseArgs (argDesc, &argc, argv);
   if (!ok || argc < 3 || printVersion || printHelp) {
     fprintf(stderr, "pdfunite version %s\n", PACKAGE_VERSION);
     fprintf(stderr, "%s\n", popplerCopyright);
@@ -191,7 +192,7 @@ int main (int argc, char *argv[])
 
   yRef = new XRef();
   countRef = new XRef();
-  yRef->add(0, 65535, 0, gFalse);
+  yRef->add(0, 65535, 0, false);
   PDFDoc::writeHeader(outStr, majorVersion, minorVersion);
 
   // handle OutputIntents, AcroForm, OCProperties & Names
@@ -228,7 +229,7 @@ int main (int argc, char *argv[])
               Object idf = intent.dictLookup("OutputConditionIdentifier");
               if (idf.isString()) {
                 const GooString *gidf = idf.getString();
-                GBool removeIntent = gTrue;
+                bool removeIntent = true;
                 for (int k = 0; k < pageintents.arrayGetLength(); k++) {
                   Object pgintent = pageintents.arrayGet(k, 0);
                   if (pgintent.isDict()) {
@@ -236,7 +237,7 @@ int main (int argc, char *argv[])
                     if (pgidf.isString()) {
                       const GooString *gpgidf = pgidf.getString();
                       if (gpgidf->cmp(gidf) == 0) {
-                        removeIntent = gFalse;
+                        removeIntent = false;
                         break;
                       }
                     }
@@ -245,7 +246,7 @@ int main (int argc, char *argv[])
                 if (removeIntent) {
                   intents.arrayRemove(j);
                   error(errSyntaxWarning, -1, "Output intent {0:s} missing in pdf {1:s}, removed",
-                   gidf->getCString(), docs[i]->getFileName()->getCString());
+                   gidf->c_str(), docs[i]->getFileName()->c_str());
                 }
               } else {
                 intents.arrayRemove(j);
@@ -279,7 +280,7 @@ int main (int argc, char *argv[])
         continue;
       }
 
-      PDFRectangle *cropBox = nullptr;
+      const PDFRectangle *cropBox = nullptr;
       if (docs[i]->getCatalog()->getPage(j)->isCropped())
         cropBox = docs[i]->getCatalog()->getPage(j)->getCropBox();
       docs[i]->replacePageDict(j,
@@ -317,12 +318,12 @@ int main (int argc, char *argv[])
         doMergeFormDict(afObj.getDict(), pageForm.getDict(), numOffset);
       }
     }
-    objectsCount += docs[i]->writePageObjects(outStr, yRef, numOffset, gTrue);
+    objectsCount += docs[i]->writePageObjects(outStr, yRef, numOffset, true);
     numOffset = yRef->getNumObjects() + 1;
   }
 
   rootNum = yRef->getNumObjects() + 1;
-  yRef->add(rootNum, 0, outStr->getPos(), gTrue);
+  yRef->add(rootNum, 0, outStr->getPos(), true);
   outStr->printf("%d 0 obj\n", rootNum);
   outStr->printf("<< /Type /Catalog /Pages %d 0 R", rootNum + 1);
   // insert OutputIntents
@@ -354,7 +355,7 @@ int main (int argc, char *argv[])
   outStr->printf(">>\nendobj\n");
   objectsCount++;
 
-  yRef->add(rootNum + 1, 0, outStr->getPos(), gTrue);
+  yRef->add(rootNum + 1, 0, outStr->getPos(), true);
   outStr->printf("%d 0 obj\n", rootNum + 1);
   outStr->printf("<< /Type /Pages /Kids [");
   for (j = 0; j < (int) pages.size(); j++)
@@ -363,7 +364,7 @@ int main (int argc, char *argv[])
   objectsCount++;
 
   for (i = 0; i < (int) pages.size(); i++) {
-    yRef->add(rootNum + i + 2, 0, outStr->getPos(), gTrue);
+    yRef->add(rootNum + i + 2, 0, outStr->getPos(), true);
     outStr->printf("%d 0 obj\n", rootNum + i + 2);
     outStr->printf("<< ");
     Dict *pageDict = pages[i].getDict();
@@ -386,9 +387,9 @@ int main (int argc, char *argv[])
   Ref ref;
   ref.num = rootNum;
   ref.gen = 0;
-  Object trailerDict = PDFDoc::createTrailerDict(objectsCount, gFalse, 0, &ref, yRef,
+  Object trailerDict = PDFDoc::createTrailerDict(objectsCount, false, 0, &ref, yRef,
                                                 fileName, outStr->getPos());
-  PDFDoc::writeXRefTableTrailer(std::move(trailerDict), yRef, gTrue, // write all entries according to ISO 32000-1, 7.5.4 Cross-Reference Table: "For a file that has never been incrementally updated, the cross-reference section shall contain only one subsection, whose object numbering begins at 0."
+  PDFDoc::writeXRefTableTrailer(std::move(trailerDict), yRef, true, // write all entries according to ISO 32000-1, 7.5.4 Cross-Reference Table: "For a file that has never been incrementally updated, the cross-reference section shall contain only one subsection, whose object numbering begins at 0."
                                 uxrefOffset, outStr, yRef);
 
   outStr->close();

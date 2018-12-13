@@ -2,6 +2,7 @@
  * Copyright (C) 2009-2011, Pino Toscano <pino@kde.org>
  * Copyright (C) 2016 Jakub Alba <jakubalba@gmail.com>
  * Copyright (C) 2017, Albert Astals Cid <aacid@kde.org>
+ * Copyright (C) 2018, Adam Reichold <adam.reichold@t-online.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,10 +42,13 @@
 
 using namespace poppler;
 
+std::mutex poppler::initer::mutex;
 unsigned int poppler::initer::count = 0U;
 
 initer::initer()
 {
+    std::lock_guard<std::mutex> lock{mutex};
+
     if (!count) {
         globalParams = new GlobalParams();
         setErrorCallback(detail::error_function, nullptr);
@@ -54,6 +58,8 @@ initer::initer()
 
 initer::~initer()
 {
+    std::lock_guard<std::mutex> lock{mutex};
+
     if (count > 0) {
         --count;
         if (!count) {
@@ -197,7 +203,7 @@ bool document::is_locked() const
 }
 
 /**
- Unlocks the current doocument, if locked.
+ Unlocks the current document, if locked.
 
  \returns the new locking status of the document
  */
@@ -863,10 +869,10 @@ bool document::get_pdf_id(std::string *permanent_id, std::string *update_id) con
     }
 
     if (permanent_id) {
-        *permanent_id = goo_permanent_id.getCString();
+        *permanent_id = goo_permanent_id.c_str();
     }
     if (update_id) {
-        *update_id = goo_update_id.getCString();
+        *update_id = goo_update_id.c_str();
     }
 
     return true;

@@ -1,7 +1,10 @@
 /* poppler-annotation-helper.h: qt interface to poppler
- * Copyright (C) 2006, 2008, 2017, Albert Astals Cid <aacid@kde.org>
+ * Copyright (C) 2006, 2008, 2017, 2018, Albert Astals Cid <aacid@kde.org>
  * Copyright (C) 2008, Pino Toscano <pino@kde.org>
  * Copyright (C) 2012, Fabio D'Urso <fabiodurso@hotmail.it>
+ * Copyright (C) 2018, Dileep Sankhla <sankhla.dileep96@gmail.com>
+ * Copyright (C) 2018, Carlos Garcia Campos <carlosgc@gnome.org>
+ * Copyright (C) 2018, Oliver Sander <oliver.sander@tu-dresden.de>
  * Adapting code from
  *   Copyright (C) 2004 by Enrico Ros <eros.kde@email.it>
  *
@@ -19,6 +22,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
+#include <memory>
 
 #include <QtCore/QDebug>
 
@@ -45,7 +50,7 @@ class XPDFReader
         static inline void lookupDate( Dict *, char *, QDateTime & dest );
         // transform from user coords to normalized ones using the matrix M
         static inline void transform( double * M, double x, double y, QPointF &res );
-        static inline void invTransform( double * M, const QPointF &p, double &x, double &y );
+        static inline void invTransform( double * M, const QPointF p, double &x, double &y );
 };
 
 void XPDFReader::lookupName( Dict * dict, char * type, QString & dest )
@@ -65,7 +70,7 @@ void XPDFReader::lookupString( Dict * dict, char * type, QString & dest )
     if ( stringObj.isNull() )
         return;
     if ( stringObj.isString() )
-        dest = stringObj.getString()->getCString();
+        dest = stringObj.getString()->c_str();
     else
         qDebug() << type << " is not String." << endl;
 }
@@ -76,7 +81,7 @@ void XPDFReader::lookupBool( Dict * dict, char * type, bool & dest )
     if ( boolObj.isNull() )
         return;
     if ( boolObj.isBool() )
-        dest = boolObj.getBool() == gTrue;
+        dest = boolObj.getBool() == true;
     else
         qDebug() << type << " is not Bool." << endl;
 }
@@ -150,7 +155,7 @@ void XPDFReader::lookupDate( Dict * dict, char * type, QDateTime & dest )
         return;
     if ( dateObj.isString() )
     {
-        dest = convertDate( dateObj.getString()->getCString() );
+        dest = convertDate( dateObj.getString()->c_str() );
     }
     else
         qDebug() << type << " is not Date" << endl;
@@ -162,7 +167,7 @@ void XPDFReader::transform( double * M, double x, double y, QPointF &res )
     res.setY( M[1] * x + M[3] * y + M[5] );
 }
 
-void XPDFReader::invTransform( double * M, const QPointF &p, double &x, double &y )
+void XPDFReader::invTransform( double * M, const QPointF p, double &x, double &y )
 {
     const double det = M[0]*M[3] - M[1]*M[2];
     Q_ASSERT(det != 0);
@@ -175,7 +180,7 @@ void XPDFReader::invTransform( double * M, const QPointF &p, double &x, double &
     y = invM[1] * xt + invM[3] * yt;
 }
 
-QColor convertAnnotColor( AnnotColor *color );
-AnnotColor* convertQColor( const QColor &color );
+QColor convertAnnotColor( const AnnotColor *color );
+std::unique_ptr<AnnotColor> convertQColor( const QColor &color );
 
 }

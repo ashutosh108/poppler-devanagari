@@ -13,6 +13,7 @@
 // Copyright (C) 2011 Carlos Garcia Campos <carlosgc@gnome.org>
 // Copyright (C) 2012 Fabio D'Urso <fabiodurso@hotmail.it>
 // Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -115,7 +116,7 @@ void FontInfoScanner::scanFonts(XRef *xrefA, Dict *resDict, GooList *fontsList) 
 
         // add this font to the list if not already found
         if (fonts.find(fontRef.num) == fonts.end()) {
-          fontsList->append(new FontInfo(font, xrefA));
+	  fontsList->push_back(new FontInfo(font, xrefA));
           fonts.insert(fontRef.num);
         }
       }
@@ -126,7 +127,7 @@ void FontInfoScanner::scanFonts(XRef *xrefA, Dict *resDict, GooList *fontsList) 
   // recursively scan any resource dictionaries in objects in this
   // resource dictionary
   const char *resTypes[] = { "XObject", "Pattern" };
-  for (Guint resType = 0; resType < sizeof(resTypes) / sizeof(resTypes[0]); ++resType) {
+  for (unsigned int resType = 0; resType < sizeof(resTypes) / sizeof(resTypes[0]); ++resType) {
     Object objDict = resDict->lookup(resTypes[resType]);
     if (objDict.isDict()) {
       for (int i = 0; i < objDict.dictGetLength(); ++i) {
@@ -171,7 +172,7 @@ FontInfo::FontInfo(GfxFont *font, XRef *xref) {
 
   // check for an embedded font
   if (font->getType() == fontType3) {
-    emb = gTrue;
+    emb = true;
   } else {
     emb = font->getEmbeddedFontID(&embRef);
   }
@@ -190,7 +191,7 @@ FontInfo::FontInfo(GfxFont *font, XRef *xref) {
   encoding = font->getEncodingName()->copy();
 
   // look for a ToUnicode map
-  hasToUnicode = gFalse;
+  hasToUnicode = false;
   Object fontObj = xref->fetch(fontRef.num, fontRef.gen);
   if (fontObj.isDict()) {
     hasToUnicode = fontObj.dictLookup("ToUnicode").isStream();
@@ -198,7 +199,7 @@ FontInfo::FontInfo(GfxFont *font, XRef *xref) {
 
   // check for a font subset name: capital letters followed by a '+'
   // sign
-  subset = gFalse;
+  subset = false;
   if (name) {
     int i;
     for (i = 0; i < name->getLength(); ++i) {

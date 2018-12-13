@@ -21,10 +21,6 @@
 
 #include <config.h>
 
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #include <string.h>
 #include "goo/gmem.h"
 #include "SplashPattern.h"
@@ -45,7 +41,7 @@ int splashColorModeNComps[] = {
 #endif
 };
 
-SplashState::SplashState(int width, int height, GBool vectorAntialias,
+SplashState::SplashState(int width, int height, bool vectorAntialias,
 			 SplashScreenParams *screenParams) {
   SplashColor color;
   int i;
@@ -60,7 +56,7 @@ SplashState::SplashState(int width, int height, GBool vectorAntialias,
   blendFunc = nullptr;
   strokeAlpha = 1;
   fillAlpha = 1;
-  multiplyPatternAlpha = gFalse;
+  multiplyPatternAlpha = false;
   patternStrokeAlpha = 1;
   patternFillAlpha = 1;
   lineWidth = 0;
@@ -71,34 +67,34 @@ SplashState::SplashState(int width, int height, GBool vectorAntialias,
   lineDash = nullptr;
   lineDashLength = 0;
   lineDashPhase = 0;
-  strokeAdjust = gFalse;
+  strokeAdjust = false;
   clip = new SplashClip(0, 0, width - 0.001, height - 0.001, vectorAntialias);
   softMask = nullptr;
-  deleteSoftMask = gFalse;
-  inNonIsolatedGroup = gFalse;
-  fillOverprint = gFalse;
-  strokeOverprint = gFalse;
+  deleteSoftMask = false;
+  inNonIsolatedGroup = false;
+  fillOverprint = false;
+  strokeOverprint = false;
   overprintMode = 0;	  
   for (i = 0; i < 256; ++i) {
-    rgbTransferR[i] = (Guchar)i;
-    rgbTransferG[i] = (Guchar)i;
-    rgbTransferB[i] = (Guchar)i;
-    grayTransfer[i] = (Guchar)i;
+    rgbTransferR[i] = (unsigned char)i;
+    rgbTransferG[i] = (unsigned char)i;
+    rgbTransferB[i] = (unsigned char)i;
+    grayTransfer[i] = (unsigned char)i;
 #ifdef SPLASH_CMYK
-    cmykTransferC[i] = (Guchar)i;
-    cmykTransferM[i] = (Guchar)i;
-    cmykTransferY[i] = (Guchar)i;
-    cmykTransferK[i] = (Guchar)i;
+    cmykTransferC[i] = (unsigned char)i;
+    cmykTransferM[i] = (unsigned char)i;
+    cmykTransferY[i] = (unsigned char)i;
+    cmykTransferK[i] = (unsigned char)i;
     for (int cp = 0; cp < SPOT_NCOMPS+4; cp++)
-      deviceNTransfer[cp][i] = (Guchar)i;
+      deviceNTransfer[cp][i] = (unsigned char)i;
 #endif
   }
   overprintMask = 0xffffffff;
-  overprintAdditive = gFalse;
+  overprintAdditive = false;
   next = nullptr;
 }
 
-SplashState::SplashState(int width, int height, GBool vectorAntialias,
+SplashState::SplashState(int width, int height, bool vectorAntialias,
 			 SplashScreen *screenA) {
   SplashColor color;
   int i;
@@ -113,7 +109,7 @@ SplashState::SplashState(int width, int height, GBool vectorAntialias,
   blendFunc = nullptr;
   strokeAlpha = 1;
   fillAlpha = 1;
-  multiplyPatternAlpha = gFalse;
+  multiplyPatternAlpha = false;
   patternStrokeAlpha = 1;
   patternFillAlpha = 1;
   lineWidth = 0;
@@ -124,30 +120,30 @@ SplashState::SplashState(int width, int height, GBool vectorAntialias,
   lineDash = nullptr;
   lineDashLength = 0;
   lineDashPhase = 0;
-  strokeAdjust = gFalse;
+  strokeAdjust = false;
   clip = new SplashClip(0, 0, width - 0.001, height - 0.001, vectorAntialias);
   softMask = nullptr;
-  deleteSoftMask = gFalse;
-  inNonIsolatedGroup = gFalse;
-  fillOverprint = gFalse;
-  strokeOverprint = gFalse;
+  deleteSoftMask = false;
+  inNonIsolatedGroup = false;
+  fillOverprint = false;
+  strokeOverprint = false;
   overprintMode = 0;	  
   for (i = 0; i < 256; ++i) {
-    rgbTransferR[i] = (Guchar)i;
-    rgbTransferG[i] = (Guchar)i;
-    rgbTransferB[i] = (Guchar)i;
-    grayTransfer[i] = (Guchar)i;
+    rgbTransferR[i] = (unsigned char)i;
+    rgbTransferG[i] = (unsigned char)i;
+    rgbTransferB[i] = (unsigned char)i;
+    grayTransfer[i] = (unsigned char)i;
 #ifdef SPLASH_CMYK
-    cmykTransferC[i] = (Guchar)i;
-    cmykTransferM[i] = (Guchar)i;
-    cmykTransferY[i] = (Guchar)i;
-    cmykTransferK[i] = (Guchar)i;
+    cmykTransferC[i] = (unsigned char)i;
+    cmykTransferM[i] = (unsigned char)i;
+    cmykTransferY[i] = (unsigned char)i;
+    cmykTransferK[i] = (unsigned char)i;
     for (int cp = 0; cp < SPOT_NCOMPS+4; cp++)
-      deviceNTransfer[cp][i] = (Guchar)i;
+      deviceNTransfer[cp][i] = (unsigned char)i;
 #endif
   }
   overprintMask = 0xffffffff;
-  overprintAdditive = gFalse;
+  overprintAdditive = false;
   next = nullptr;
 }
 
@@ -179,7 +175,7 @@ SplashState::SplashState(SplashState *state) {
   strokeAdjust = state->strokeAdjust;
   clip = state->clip->copy();
   softMask = state->softMask;
-  deleteSoftMask = gFalse;
+  deleteSoftMask = false;
   inNonIsolatedGroup = state->inNonIsolatedGroup;
   fillOverprint = state->fillOverprint;
   strokeOverprint = state->strokeOverprint;
@@ -245,11 +241,11 @@ void SplashState::setSoftMask(SplashBitmap *softMaskA) {
     delete softMask;
   }
   softMask = softMaskA;
-  deleteSoftMask = gTrue;
+  deleteSoftMask = true;
 }
 
-void SplashState::setTransfer(Guchar *red, Guchar *green, Guchar *blue,
-			      Guchar *gray) {
+void SplashState::setTransfer(unsigned char *red, unsigned char *green, unsigned char *blue,
+			      unsigned char *gray) {
 #ifdef SPLASH_CMYK
   int i;
 

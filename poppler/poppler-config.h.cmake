@@ -17,6 +17,7 @@
 // Copyright (C) 2014 Hib Eris <hib@hiberis.nl>
 // Copyright (C) 2016 Tor Lillqvist <tml@collabora.com>
 // Copyright (C) 2017 Adrian Johnson <ajohnson@redneon.com>
+// Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
 //
 // To see a description of the changes please see the Changelog file that
 // came with your tarball or type make ChangeLog if you are building from git
@@ -34,11 +35,6 @@
 /* Defines the poppler version. */
 #ifndef POPPLER_VERSION
 #define POPPLER_VERSION "${POPPLER_VERSION}"
-#endif
-
-/* Enable multithreading support. */
-#ifndef MULTITHREADED
-#cmakedefine MULTITHREADED 1
 #endif
 
 /* Use fixedpoint. */
@@ -118,11 +114,6 @@
 #ifndef USE_CMS
 #cmakedefine USE_CMS 1
 #endif
-
-// Also, there are preprocessor symbols in the header files
-// that are used but never defined when building poppler using configure
-// or cmake: DISABLE_OUTLINE, DEBUG_MEM,
-// ENABLE_PLUGINS, DEBUG_FORMS
 
 //------------------------------------------------------------------------
 // version

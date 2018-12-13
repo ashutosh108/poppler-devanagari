@@ -77,7 +77,7 @@ MovieObject::~MovieObject()
 QString MovieObject::url() const
 {
 	const GooString * goo = m_movieData->m_movieObj->getFileName();
-	return goo ? QString( goo->getCString() ) : QString();
+	return goo ? QString( goo->c_str() ) : QString();
 }
 
 QSize MovieObject::size() const
@@ -102,7 +102,7 @@ MovieObject::PlayMode MovieObject::playMode() const
 
 bool MovieObject::showPosterImage() const
 {
-	return (m_movieData->m_movieObj->getShowPoster() == gTrue);
+	return (m_movieData->m_movieObj->getShowPoster() == true);
 }
 
 QImage MovieObject::posterImage() const

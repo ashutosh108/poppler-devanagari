@@ -13,7 +13,7 @@
 // All changes made under the Poppler project to this file are licensed
 // under GPL version 2 or later
 //
-// Copyright (C) 2005, 2008, 2010 Albert Astals Cid <aacid@kde.org>
+// Copyright (C) 2005, 2008, 2010, 2018 Albert Astals Cid <aacid@kde.org>
 // Copyright (C) 2005 Kristian Høgsberg <krh@redhat.com>
 // Copyright (C) 2010 Jakub Wilk <jwilk@jwilk.net>
 // Copyright (C) 2014 Carlos Garcia Campos <carlosgc@gnome.org>
@@ -26,10 +26,6 @@
 //========================================================================
 
 #include <config.h>
-
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -45,21 +41,21 @@
 // FoFiType1
 //------------------------------------------------------------------------
 
-FoFiType1 *FoFiType1::make(char *fileA, int lenA) {
-  return new FoFiType1(fileA, lenA, gFalse);
+FoFiType1 *FoFiType1::make(const char *fileA, int lenA) {
+  return new FoFiType1(fileA, lenA, false);
 }
 
-FoFiType1 *FoFiType1::load(char *fileName) {
+FoFiType1 *FoFiType1::load(const char *fileName) {
   char *fileA;
   int lenA;
 
   if (!(fileA = FoFiBase::readFile(fileName, &lenA))) {
     return nullptr;
   }
-  return new FoFiType1(fileA, lenA, gTrue);
+  return new FoFiType1(fileA, lenA, true);
 }
 
-FoFiType1::FoFiType1(char *fileA, int lenA, GBool freeFileDataA):
+FoFiType1::FoFiType1(const char *fileA, int lenA, bool freeFileDataA):
   FoFiBase(fileA, lenA, freeFileDataA)
 {
   name = nullptr;
@@ -70,7 +66,7 @@ FoFiType1::FoFiType1(char *fileA, int lenA, GBool freeFileDataA):
   fontMatrix[3] = 0.001;
   fontMatrix[4] = 0;
   fontMatrix[5] = 0;
-  parsed = gFalse;
+  parsed = false;
   undoPFB();
 }
 
@@ -88,7 +84,7 @@ FoFiType1::~FoFiType1() {
   }
 }
 
-char *FoFiType1::getName() {
+const char *FoFiType1::getName() {
   if (!parsed) {
     parse();
   }
@@ -114,7 +110,7 @@ void FoFiType1::getFontMatrix(double *mat) {
 }
 
 void FoFiType1::writeEncoded(const char **newEncoding,
-			     FoFiOutputFunc outputFunc, void *outputStream) {
+			     FoFiOutputFunc outputFunc, void *outputStream) const {
   char buf[512];
   char *line, *line2, *p;
   int i;
@@ -196,7 +192,7 @@ void FoFiType1::writeEncoded(const char **newEncoding,
   }
 }
 
-char *FoFiType1::getNextLine(char *line) {
+char *FoFiType1::getNextLine(char *line) const {
   while (line < (char *)file + len && *line != '\x0a' && *line != '\x0d') {
     ++line;
   }
@@ -218,9 +214,9 @@ void FoFiType1::parse() {
   char c;
   int n, code, base, i, j;
   char *tokptr;
-  GBool gotMatrix, continueLine;
+  bool gotMatrix, continueLine;
 
-  gotMatrix = gFalse;
+  gotMatrix = false;
   for (i = 1, line = (char *)file;
        i <= 100 && line && (!name || !encoding);
        ++i) {
@@ -251,7 +247,7 @@ void FoFiType1::parse() {
       for (j = 0; j < 256; ++j) {
 	encoding[j] = nullptr;
       }
-      continueLine = gFalse;
+      continueLine = false;
       for (j = 0, line = getNextLine(line);
 	   j < 300 && line && (line1 = getNextLine(line));
 	   ++j, line = line1) {
@@ -260,7 +256,7 @@ void FoFiType1::parse() {
 	  n = 255;
 	}
 	if (continueLine) {
-	  continueLine = gFalse;
+	  continueLine = false;
 	  if ((line1 - firstLine) + 1 > (int)sizeof(buf))
 	    break;
 	  p = firstLine;
@@ -291,7 +287,7 @@ void FoFiType1::parse() {
 	    } else if (*p >= '0' && *p <= '9') {
 	      base = 10;
 	    } else if (*p == '\n' || *p == '\r') {
-	      continueLine = gTrue;
+	      continueLine = true;
 	      break;
 	    } else {
 	      break;
@@ -301,7 +297,7 @@ void FoFiType1::parse() {
 	    }
 	    for (; *p == ' ' || *p == '\t'; ++p) ;
 	    if (*p == '\n' || *p == '\r') {
-	      continueLine = gTrue;
+	      continueLine = true;
 	      break;
 	    } else if (*p != '/') {
 	      break;
@@ -317,7 +313,7 @@ void FoFiType1::parse() {
 	    }
 	    for (p = p2; *p == ' ' || *p == '\t'; ++p) ;
 	    if (*p == '\n' || *p == '\r') {
-	      continueLine = gTrue;
+	      continueLine = true;
 	      break;
 	    }
 	    if (strncmp(p, "put", 3)) {
@@ -349,7 +345,7 @@ void FoFiType1::parse() {
 	if ((p2 = strchr(p, ']'))) {
 	  *p2 = '\0';
 	  for (j = 0; j < 6; ++j) {
-	    if ((p = strtok(j == 0 ? p : (char *)nullptr, " \t\n\r"))) {
+	    if ((p = strtok(j == 0 ? p : nullptr, " \t\n\r"))) {
 	      fontMatrix[j] = atof(p);
 	    } else {
 	      break;
@@ -357,28 +353,28 @@ void FoFiType1::parse() {
 	  }
 	}
       }
-      gotMatrix = gTrue;
+      gotMatrix = true;
 
     } else {
       line = getNextLine(line);
     }
   }
 
-  parsed = gTrue;
+  parsed = true;
 }
 
 // Undo the PFB encoding, i.e., remove the PFB headers.
 void FoFiType1::undoPFB() {
-  GBool ok;
-  Guchar *file2;
+  bool ok;
+  unsigned char *file2;
   int pos1, pos2, type;
-  Guint segLen;
+  unsigned int segLen;
 
-  ok = gTrue;
+  ok = true;
   if (getU8(0, &ok) != 0x80 || !ok) {
     return;
   }
-  file2 = (Guchar *)gmalloc(len);
+  file2 = (unsigned char *)gmalloc(len);
   pos1 = pos2 = 0;
   while (getU8(pos1, &ok) == 0x80 && ok) {
     type = getU8(pos1 + 1, &ok);
@@ -395,9 +391,9 @@ void FoFiType1::undoPFB() {
     pos2 += segLen;
   }
   if (freeFileData) {
-    gfree(fileData);
+    gfree((char*)file);
   }
-  file = fileData = file2;
-  freeFileData = gTrue;
+  file = file2;
+  freeFileData = true;
   len = pos2;
 }

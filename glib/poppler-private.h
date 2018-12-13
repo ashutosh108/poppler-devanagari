@@ -71,6 +71,10 @@ struct _PopplerFormField
   PopplerDocument *document;
   FormWidget *widget;
   PopplerAction *action;
+  PopplerAction *field_modified_action;
+  PopplerAction *format_field_action;
+  PopplerAction *validate_field_action;
+  PopplerAction *calculate_field_action;
 };
 
 struct _PopplerAnnot
@@ -102,7 +106,7 @@ struct _PopplerStructureElement
   /*< private >*/
   GObject parent_instance;
   PopplerDocument *document;
-  StructElement *elem;
+  const StructElement *elem;
 };
 
 GList         *_poppler_document_get_layers (PopplerDocument *document);

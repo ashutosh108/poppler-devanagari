@@ -20,10 +20,6 @@
 
 #include <config.h>
 
-#ifdef USE_GCC_PRAGMAS
-#pragma implementation
-#endif
-
 #include "SplashMath.h"
 #include "SplashScreen.h"
 #include "SplashPattern.h"
@@ -49,7 +45,7 @@ SplashSolidColor::SplashSolidColor(SplashColorPtr colorA) {
 SplashSolidColor::~SplashSolidColor() {
 }
 
-GBool SplashSolidColor::getColor(int x, int y, SplashColorPtr c) {
+bool SplashSolidColor::getColor(int x, int y, SplashColorPtr c) {
   splashColorCopy(c, color);
-  return gTrue;
+  return true;
 }

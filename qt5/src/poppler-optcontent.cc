@@ -6,6 +6,7 @@
  * Copyright (C) 2015-2018, Albert Astals Cid <aacid@kde.org>
  * Copyright (C) 2017, Hubert Figuière <hub@figuiere.net>
  * Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, <info@kdab.com>. Work sponsored by the LiMux project of the city of Munich
+ * Copyright (C) 2018 Adam Reichold <adam.reichold@t-online.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -165,12 +166,11 @@ namespace Poppler
     : q(qq)
   {
     m_rootNode = new OptContentItem();
-    GooList *ocgs = optContent->getOCGs();
+    const auto &ocgs = optContent->getOCGs();
 
-    for (int i = 0; i < ocgs->getLength(); ++i) {
-      OptionalContentGroup *ocg = static_cast<OptionalContentGroup*>(ocgs->get(i));
-      OptContentItem *node = new OptContentItem( ocg );
-      m_optContentItems.insert( QString::number(ocg->getRef().num), node);
+    for (const auto& ocg : ocgs) {
+      OptContentItem *node = new OptContentItem( ocg.second.get() );
+      m_optContentItems.insert( QString::number( ocg.first.num ), node );
     }
 
     if ( optContent->getOrderArray() == nullptr ) {

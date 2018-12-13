@@ -23,12 +23,6 @@
 #ifndef BUILTINFONT_H
 #define BUILTINFONT_H
 
-#ifdef USE_GCC_PRAGMAS
-#pragma interface
-#endif
-
-#include "goo/gtypes.h"
-
 struct BuiltinFont;
 class BuiltinFontWidths;
 
@@ -47,7 +41,7 @@ struct BuiltinFont {
 
 struct BuiltinFontWidth {
   const char *name;
-  Gushort width;
+  unsigned short width;
   BuiltinFontWidth *next;
 };
 
@@ -60,7 +54,7 @@ public:
   BuiltinFontWidths(const BuiltinFontWidths &) = delete;
   BuiltinFontWidths& operator=(const BuiltinFontWidths &) = delete;
 
-  GBool getWidth(const char *name, Gushort *width);
+  bool getWidth(const char *name, unsigned short *width);
 
 private:
 
