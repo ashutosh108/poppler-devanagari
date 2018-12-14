@@ -78,3 +78,6 @@ add_executable(test-devanagari test-devanagari.cc
 	target_link_libraries(test-devanagari poppler Boost::unit_test_framework)
 	target_include_directories(test-devanagari PRIVATE "${CMAKE_SOURCE_DIR}/utils")
 add_test(NAME test-devanagari COMMAND test-devanagari WORKING_DIRECTORY $<TARGET_FILE_DIR:poppler>)
+# build tests and run them
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+	DEPENDS test-htmlstring test-devanagari)
