@@ -80,6 +80,20 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     devanagariTest("E", { Char::_i });
     devanagariTest("\015", { Char::ra, Char::virama });
     devanagariTest("\x93", { Char::da, Char::virama, Char::ba });
+    devanagariTest("Z", { Char::nna });
+    devanagariTest("^", { Char::virama });
+    devanagariTest("\xfe", { Char::pa, Char::virama, Char::ra });
+    devanagariTest(";", { Char::double_danda });
+    devanagariTest("\x89", { Char::da, Char::virama, Char::bha });
+    devanagariTest("a", { Char::a });
+    devanagariTest("k", { Char::ka });
+    devanagariTest("D", { Char::dha });
+    devanagariTest("o", { Char::_o });
+    devanagariTest("_", { Char::_avagraha });
+    devanagariTest("@", { Char::dh, Char::virama });
+    devanagariTest("j", { Char::ja });
+    devanagariTest("\x8d", { Char::da, Char::virama, Char::ya });
+    devanagariTest("\x96", { Char::sha, Char::virama, Char::ca });
 }
 
 BOOST_AUTO_TEST_CASE(Devanagari_unknownLettersAreShownAsHexCodes) {

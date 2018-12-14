@@ -45,6 +45,20 @@ namespace devanagari {
         { 'E',{ Char::_i } },
         { '\015',{ Char::ra, Char::virama } },
         { '\x93',{ Char::da, Char::virama, Char::ba } },
+        { 'Z',{ Char::nna } },
+        { '^',{ Char::virama } },
+        { '\xfe',{ Char::pa, Char::virama, Char::ra } },
+        { ';',{ Char::double_danda } },
+        { '\x89',{ Char::da, Char::virama, Char::bha } },
+        { 'a',{ Char::a } },
+        { 'k',{ Char::ka } },
+        { 'D',{ Char::dha } },
+        { 'o',{ Char::_o } },
+        { '_',{ Char::_avagraha } },
+        { '@',{ Char::dha, Char::virama } },
+        { 'j',{ Char::ja } },
+        { '\x8d',{ Char::da, Char::virama, Char::ya } },
+        { '\x96',{ Char::sha, Char::virama, Char::ca } },
         };
 
         for (int i = 0; i < str.getLen(); ++i) {
