@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     devanagariTest("c", { Char::ca });
     devanagariTest("-t", { Char::sa, Char::virama, Char::ta });
     devanagariTest("E", { Char::_i });
-    devanagariTest("\015", { Char::virama, Char::r });
+    devanagariTest("\015", { Char::ra, Char::virama });
 }
 
 BOOST_AUTO_TEST_CASE(Devanagari_unknownLettersAreShownAsHexCodes) {

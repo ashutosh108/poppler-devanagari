@@ -43,7 +43,7 @@ namespace devanagari {
         { 'c',{ Char::ca } },
         { '-',{ Char::sa, Char::virama } },
         { 'E',{ Char::_i } },
-        { '\015',{ Char::virama, Char::r } },
+        { '\015',{ Char::ra, Char::virama } },
         };
 
         for (int i = 0; i < str.getLen(); ++i) {
