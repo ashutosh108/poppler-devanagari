@@ -44,6 +44,7 @@ namespace devanagari {
         { '-',{ Char::sa, Char::virama } },
         { 'E',{ Char::_i } },
         { '\015',{ Char::ra, Char::virama } },
+        { '\x93',{ Char::da, Char::virama, Char::ba } },
         };
 
         for (int i = 0; i < str.getLen(); ++i) {
