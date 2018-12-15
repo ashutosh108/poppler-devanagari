@@ -64,6 +64,7 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     devanagariTest("T", { Char::tha });
     devanagariTest("B", { Char::bha });
     devanagariTest("g", { Char::ga });
+    devanagariTest("h", { Char::ha });
     devanagariTest("v", { Char::va });
     devanagariTest("(", { Char::ta, Char::virama });
     devanagariTest("p", { Char::pa });
@@ -80,9 +81,11 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     devanagariTest("E", { Char::_i });
     devanagariTest("\015", { Char::ra, Char::virama });
     devanagariTest("\x93", { Char::da, Char::virama, Char::ba });
+    devanagariTest("V", { Char::tta });
     devanagariTest("Z", { Char::nna });
     devanagariTest("^", { Char::virama });
     devanagariTest("\xfe", { Char::pa, Char::virama, Char::ra });
+    devanagariTest(".", { Char::danda });
     devanagariTest(";", { Char::double_danda });
     devanagariTest("\x89", { Char::da, Char::virama, Char::bha });
     devanagariTest("a", { Char::a });
@@ -94,6 +97,9 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     devanagariTest("j", { Char::ja });
     devanagariTest("\x8d", { Char::da, Char::virama, Char::ya });
     devanagariTest("\x96", { Char::sha, Char::virama, Char::ca });
+    devanagariTest("\xe2", { Char::ja, Char::virama, Char::nya });
+    devanagariTest("\x03", { Char::_e });
+    devanagariTest("\x09", { Char::ssa, Char::virama });
 }
 
 BOOST_AUTO_TEST_CASE(Devanagari_unknownLettersAreShownAsHexCodes) {

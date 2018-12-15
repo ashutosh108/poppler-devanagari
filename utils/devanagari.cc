@@ -22,6 +22,7 @@ namespace devanagari {
         { 'T',{ Char::tha } },
         { 'B',{ Char::bha } },
         { 'g',{ Char::ga } },
+        { 'h',{ Char::ha } },
         { 'v',{ Char::va } },
         { '(',{ Char::ta, Char::virama} },
         { 'p',{ Char::pa } },
@@ -43,11 +44,14 @@ namespace devanagari {
         { 'c',{ Char::ca } },
         { '-',{ Char::sa, Char::virama } },
         { 'E',{ Char::_i } },
+        { '\x09',{ Char::ssa, Char::virama } },
         { '\015',{ Char::ra, Char::virama } },
         { '\x93',{ Char::da, Char::virama, Char::ba } },
+        { 'V',{ Char::tta } },
         { 'Z',{ Char::nna } },
         { '^',{ Char::virama } },
         { '\xfe',{ Char::pa, Char::virama, Char::ra } },
+        { '.',{ Char::danda } },
         { ';',{ Char::double_danda } },
         { '\x89',{ Char::da, Char::virama, Char::bha } },
         { 'a',{ Char::a } },
@@ -59,6 +63,8 @@ namespace devanagari {
         { 'j',{ Char::ja } },
         { '\x8d',{ Char::da, Char::virama, Char::ya } },
         { '\x96',{ Char::sha, Char::virama, Char::ca } },
+        { '\xe2',{ Char::ja, Char::virama, Char::nya } },
+        { '\x03',{ Char::_e } },
         };
 
         for (int i = 0; i < str.getLen(); ++i) {
