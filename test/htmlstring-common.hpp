@@ -54,18 +54,18 @@ public:
     addString(name, init_str);
 
 // unsigned to avoid converting e.g. 0x80 to 0xffffff80 on platforms with signed char
-void addChar(HtmlString &s, Unicode c) {
+inline void addChar(HtmlString &s, Unicode c) {
     s.addChar(nullptr, 10.0, 10.0, 1, 0, c);
 }
 
-void addString(HtmlString &hs, const char *s) {
+inline void addString(HtmlString &hs, const char *s) {
     int len = strlen(s);
     for (int i = 0; i < len; ++i) {
         addChar(hs, static_cast<unsigned char>(s[i]));
     }
 }
 
-void ensureStringIs(HtmlString & s, const char * expected) {
+inline void ensureStringIs(HtmlString & s, const char * expected) {
     int len = strlen(expected);
     BOOST_TEST(s.getLen() == len);
     int minLen = std::min(s.getLen(), len);

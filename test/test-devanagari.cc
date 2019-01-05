@@ -10,7 +10,7 @@
 
 using namespace devanagari;
 
-void ensureStringIs(HtmlString & s, std::initializer_list<Unicode> expected, char const * source) {
+inline void ensureStringIs(HtmlString & s, std::initializer_list<Unicode> expected, char const * source) {
     int len = expected.size();
     BOOST_TEST(s.getLen() == len);
     int minLen = std::min(s.getLen(), len);
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(Devanagari_Srii) {
         devanagari::Char::_ii}, "shrii");
 }
 
-void devanagariTest(const char *source, std::initializer_list<Unicode> expected) {
+inline void devanagariTest(const char *source, std::initializer_list<Unicode> expected) {
     NEW_HTML_STRING(s, source);
 
     devanagari::convertFromTex(s);
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(Devanagari_VariousLetters) {
     devanagariTest("D", { Char::dha });
     devanagariTest("o", { Char::_o });
     devanagariTest("_", { Char::_avagraha });
-    devanagariTest("@", { Char::dh, Char::virama });
+    devanagariTest("@", { Char::dha, Char::virama });
     devanagariTest("j", { Char::ja });
     devanagariTest("\x8d", { Char::da, Char::virama, Char::ya });
     devanagariTest("\x96", { Char::sha, Char::virama, Char::ca });
